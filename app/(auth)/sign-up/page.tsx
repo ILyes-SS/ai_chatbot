@@ -2,37 +2,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signUp } from "@/lib/auth-client";
+import { signUpSchema, type SignUpData } from "@/lib/schemas/auth";
 
 export default function SignUpPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<SignUpData>({
+    resolver: zodResolver(signUpSchema),
+  });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: SignUpData) => {
     setError("");
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
 
     const { error: signUpError } = await signUp.email({
-      name,
-      email,
-      password,
+      name: data.name,
+      email: data.email,
+      password: data.password,
       callbackURL: "/",
     });
 
@@ -51,7 +47,7 @@ export default function SignUpPage() {
         <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-8 shadow-xl">
           <h1 className="text-2xl font-bold text-white">Check your email</h1>
           <p className="mt-2 text-sm text-zinc-400">
-            We&apos;ve sent a verification link to <strong className="text-white">{email}</strong>.
+            We&apos;ve sent a verification link to <strong className="text-white">{getValues("email")}</strong>.
             Please check your inbox and click the link to verify your account.
           </p>
           <p className="mt-6 text-center text-sm text-zinc-400">
@@ -77,7 +73,7 @@ export default function SignUpPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="name" className="block text-sm font-medium text-zinc-300">
               Name
@@ -87,11 +83,12 @@ export default function SignUpPage() {
               type="text"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
               autoComplete="name"
+              {...register("name")}
             />
+            {errors.name && (
+              <p className="text-xs text-red-400">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -103,11 +100,12 @@ export default function SignUpPage() {
               type="email"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
               autoComplete="email"
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="text-xs text-red-400">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -119,28 +117,29 @@ export default function SignUpPage() {
               type="password"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="Min. 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
               autoComplete="new-password"
+              {...register("password")}
             />
+            {errors.password && (
+              <p className="text-xs text-red-400">{errors.password.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-300">
               Confirm password
             </label>
             <input
-              id="confirm-password"
+              id="confirmPassword"
               type="password"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
               autoComplete="new-password"
+              {...register("confirmPassword")}
             />
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button

@@ -3,15 +3,24 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@/lib/auth-client";
+import { resetPasswordSchema, type ResetPasswordData } from "@/lib/schemas/auth";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordData>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,24 +43,12 @@ export default function ResetPasswordPage() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ResetPasswordData) => {
     setError("");
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
 
     const { error: resetError } = await authClient.resetPassword({
-      newPassword: password,
+      newPassword: data.password,
       token,
     });
 
@@ -95,7 +92,7 @@ export default function ResetPasswordPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
               New password
@@ -105,28 +102,29 @@ export default function ResetPasswordPage() {
               type="password"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="Min. 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
               autoComplete="new-password"
+              {...register("password")}
             />
+            {errors.password && (
+              <p className="text-xs text-red-400">{errors.password.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-300">
               Confirm new password
             </label>
             <input
-              id="confirm-password"
+              id="confirmPassword"
               type="password"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
               autoComplete="new-password"
+              {...register("confirmPassword")}
             />
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button
