@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createConversation } from "@/actions/conversations";
+import SearchModal from "./SearchModal";
 
 interface Conversation {
   _id: string;
@@ -11,13 +14,48 @@ interface Conversation {
   updatedAt: string;
 }
 
-interface SidebarProps {
-  conversations: Conversation[];
+interface Project {
+  _id: string;
+  title: string;
+  updatedAt: string;
 }
 
-export default function Sidebar({ conversations = [] }: SidebarProps) {
+interface SidebarProps {
+  conversations: Conversation[];
+  projects: Project[];
+}
+
+export default function Sidebar({ conversations = [], projects = [] }: SidebarProps) {
   const [expanded, setExpanded] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Command/Ctrl + K to open search
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleNewChat = async () => {
+    if (isCreating) return;
+    setIsCreating(true);
+    try {
+      const result = await createConversation({ title: "New Chat" });
+      if (result.success && result.data) {
+        router.push(`/chat/${result.data._id}`);
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const pinned = conversations.filter((c) => c.pinned);
   const recent = conversations.filter((c) => !c.pinned);
@@ -38,7 +76,9 @@ export default function Sidebar({ conversations = [] }: SidebarProps) {
       {/* ── Top: New chat button & Projects Link ── */}
       <div className="p-4 pb-2 shrink-0 flex flex-col gap-2">
         <button
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 text-sm font-medium cursor-pointer transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap"
+          onClick={handleNewChat}
+          disabled={isCreating}
+          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 text-sm font-medium cursor-pointer transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           title="New chat"
         >
           <svg
@@ -55,6 +95,33 @@ export default function Sidebar({ conversations = [] }: SidebarProps) {
             <path d="M12 5v14M5 12h14" />
           </svg>
           {expanded && <span>New chat</span>}
+        </button>
+
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 text-sm font-medium cursor-pointer transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap"
+          title="Search (⌘K)"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          {expanded && <span className="flex-1 text-left">Search</span>}
+          {expanded && (
+            <span className="text-[10px] font-bold text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded-md leading-none border border-zinc-700">
+              ⌘K
+            </span>
+          )}
         </button>
 
         <Link
@@ -241,6 +308,13 @@ export default function Sidebar({ conversations = [] }: SidebarProps) {
           )}
         </div>
       )}
+
+      <SearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+        conversations={conversations}
+        projects={projects}
+      />
     </aside>
   );
 }
