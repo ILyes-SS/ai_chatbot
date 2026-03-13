@@ -51,7 +51,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
     try {
       const result = await createConversation({ title: "New Chat" });
       if (result.success && result.data) {
-        router.push(`/chat/${result.data._id}`);
+        router.push(`/chats/${result.data._id}`);
       }
     } finally {
       setIsCreating(false);

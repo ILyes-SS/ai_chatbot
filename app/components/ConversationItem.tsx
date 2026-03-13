@@ -113,7 +113,7 @@ export default function ConversationItem({ conversation, expanded, projects }: C
           </div>
         ) : (
           <Link
-            href={`/chat/${conversation._id}`}
+            href={`/chats/${conversation._id}`}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-zinc-300 no-underline text-[13px] transition-colors hover:bg-zinc-800/50 whitespace-nowrap overflow-hidden ${isDropdownOpen ? 'bg-zinc-800/50' : ''}`}
             title={conversation.title}
           >
