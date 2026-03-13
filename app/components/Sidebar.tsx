@@ -157,8 +157,8 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
         {/* Pinned / Bookmarks */}
         {pinned.length > 0 && (
           <section className="mb-3 mt-2">
-            <h3 className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 whitespace-nowrap">
-              <svg
+            <h3 className="flex items-center gap-2 px-3 pl-1 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 whitespace-nowrap">
+              {expanded && <svg
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
@@ -170,12 +170,12 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
                 className="shrink-0"
               >
                 <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-              </svg>
+              </svg>}
               {expanded && <span>Bookmarks</span>}
             </h3>
             <ul className="list-none m-0 p-0">
               {pinned.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} />
               ))}
             </ul>
           </section>
@@ -203,7 +203,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
             </h3>
             <ul className="list-none m-0 p-0">
               {recent.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} />
               ))}
             </ul>
           </section>

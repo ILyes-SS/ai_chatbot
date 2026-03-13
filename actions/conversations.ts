@@ -144,6 +144,11 @@ export async function updateConversation(
 
     if (parsed.data.title !== undefined) setFields.title = parsed.data.title;
     if (parsed.data.pinned !== undefined) setFields.pinned = parsed.data.pinned;
+    if (parsed.data.projectId !== undefined) {
+      setFields.projectId = parsed.data.projectId 
+        ? new ObjectId(parsed.data.projectId) 
+        : null;
+    }
 
     updateDoc.$set = setFields;
 

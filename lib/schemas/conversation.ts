@@ -43,6 +43,7 @@ export type CreateConversationData = z.infer<typeof createConversationSchema>;
 export const updateConversationSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   pinned: z.boolean().optional(),
+  projectId: z.string().nullable().optional(),
   messages: z.array(messageSchema).optional(),
 });
 
