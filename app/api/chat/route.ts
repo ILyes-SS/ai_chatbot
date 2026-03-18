@@ -11,7 +11,8 @@ const gateway = createGoogleGenerativeAI({
 
 export async function POST(req: Request) {
   const { messages, chatId }: { messages: UIMessage[]; chatId: string } = await req.json();
-
+  console.dir(messages, { depth: null });
+  console.dir(chatId, { depth: null });
   const result = streamText({
     model: gateway("gemini-2.5-flash-lite"),
     messages: await convertToModelMessages(messages),
