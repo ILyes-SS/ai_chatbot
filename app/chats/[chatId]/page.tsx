@@ -93,22 +93,33 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
     if (message.text.trim() || message.files?.length > 0) {
       const filesToAttach = await Promise.all(
         (message.files || []).map(async (f) => {
-          if (f.url.startsWith("data:") || f.url.startsWith("blob:")) {
-            const res = await fetch(f.url);
+          let url = f.url;
+          if (typeof url === "string" && url.startsWith("blob:")) {
+            const res = await fetch(url);
             const blob = await res.blob();
-            return new File([blob], f.filename || "attachment", { type: f.mediaType || "application/octet-stream" });
-          }
-          return null;
+            url = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } 
+          
+          return {
+            type: "file",
+            mediaType: (f as any).contentType || f.mediaType || "application/octet-stream",
+            filename: (f as any).name || f.filename || "attachment",
+            url: url,
+          };
         })
       );
       
-      const validFiles = filesToAttach.filter(Boolean) as File[];
-      console.log("validFiles");
-      console.dir(validFiles, { depth: null });
+      const validFiles = filesToAttach.filter(Boolean);
 
-      sendMessage(
-        { text: message.text || "", attachments: validFiles} as any,
-      );
+      sendMessage({
+        text: message.text || "",
+        files: validFiles
+      } as any);
       setInput("");
     }
   };
@@ -137,30 +148,39 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 messages.map((message) => (
                   <Message from={message.role} key={message.id}>
                     <MessageContent>
-                      {/* @ts-ignore - experimental_attachments is typed incorrectly in older SDK versions */}
-                      {message.experimental_attachments?.map((attachment: any, i: number) => (
-                        <div key={`${message.id}-attachment-${i}`} className="mb-2 max-w-[240px]">
-                           {attachment.contentType?.startsWith('image/') ? (
-                             <img src={attachment.url} alt={attachment.name || "Attachment"} className="rounded-lg border border-border/50 object-cover w-full h-auto" />
-                           ) : (
-                             <div className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-muted/50 text-xs text-muted-foreground">
-                               <PaperclipIcon className="size-4 shrink-0" />
-                               <span className="truncate">{attachment.name || "Attachment"}</span>
-                             </div>
-                           )}
-                        </div>
-                      ))}
                       {message.parts?.map((part, i) => {
-                        switch (part.type) {
-                          case "text":
-                            return (
-                              <MessageResponse key={`${message.id}-${i}`}>
-                                {part.text}
-                              </MessageResponse>
-                            );
-                          default:
-                            return null;
+                        const key = `${message.id}-part-${i}`;
+                        if (part.type === "text") {
+                          return (
+                            <MessageResponse key={key}>
+                              {part.text}
+                            </MessageResponse>
+                          );
                         }
+                        // @ts-ignore - Some older definitions of UIMessage.part might not include 'file'
+                        if (part.type === "file") {
+                          // @ts-ignore - Handle possible legacy image parts vs standard v5 files
+                          const isImage = part.mediaType?.startsWith('image/');
+                          // @ts-ignore
+                          const url = part.url || part.image;
+                          
+                          if (isImage) {
+                            return (
+                              <div key={key} className="mb-2 max-w-[240px]">
+                                <img src={url} alt="Attachment" className="rounded-lg border border-border/50 object-cover w-full h-auto" />
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div key={key} className="mb-2 max-w-[240px] flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-muted/50 text-xs text-muted-foreground">
+                                <PaperclipIcon className="size-4 shrink-0" />
+                                {/* @ts-ignore */}
+                                <span className="truncate">{part.filename || "Attachment"}</span>
+                              </div>
+                            );
+                          }
+                        }
+                        return null;
                       }) || (
                         // Fallback just in case `parts` is not available, try using text directly (for legacy storage compatibility)
                         // @ts-ignore
