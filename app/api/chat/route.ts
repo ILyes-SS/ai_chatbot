@@ -1,6 +1,6 @@
 import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { updateConversation } from "@/actions/conversations";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
 
 export const maxDuration = 30;
 
@@ -10,9 +10,8 @@ const gateway = createGoogleGenerativeAI({
 });
 
 export async function POST(req: Request) {
-  const { messages, chatId, model }: { messages: UIMessage[]; chatId: string; model?: string } = await req.json();
+  const { messages, chatId, model, useThinking, useWebSearch }: { messages: UIMessage[]; chatId: string; model?: string; useThinking?: boolean; useWebSearch?: boolean } = await req.json();
   
-  console.log("MODEL", model)
   const normalizedMessages = messages.map(msg => ({
     ...msg,
     parts: msg.parts?.map(part => {
@@ -24,15 +23,26 @@ export async function POST(req: Request) {
       return part;
     })
   }));
-
+  const tools = useWebSearch 
+    ? { google_search: google.tools.googleSearch({}) } 
+    : undefined;
+  const thinkingBudget = useThinking ? 512 : 0;
   const modelToUse = model || "gemini-2.5-flash-lite";
 
   const result = streamText({
     model: gateway(modelToUse),
     messages: await convertToModelMessages(normalizedMessages),
+    tools,
+    providerOptions: {
+    google: {
+      thinkingConfig: {
+        thinkingBudget,
+      },
+    },
+  },
     onFinish: async ( event ) => {
       // // The `messages` array from the client has the new user message at the end
-      // const lastUserMessage = messages[messages.length - 1];
+      const lastUserMessage = messages[messages.length - 1];
       
       // // We need to map the response to the UIMessage schema expected by the database
       // // The `response.messages` in newer AI SDK versions contains the generated model messages
@@ -49,14 +59,14 @@ export async function POST(req: Request) {
       try {
         const modelMessage = { parts: (event.response.messages.map(m => {return m.content})).flat(), role: "assistant", id: event.response.id }
         
-        console.log("modelMessage")
-        console.dir(modelMessage, { depth: null })
+        // console.log("modelMessage")
+        // console.dir(modelMessage, { depth: null })
 
         const {success, error} = await updateConversation(chatId, {
-          messages: [...messages, modelMessage] as any,
+          messages: [lastUserMessage, modelMessage] as any,
         });
-        console.log("SUCCESS", success)
-        console.log("ERROR", error)
+        // console.log("SUCCESS", success)
+        // console.log("ERROR", error)
       } catch (e) {
         console.error("Failed to save conversation messages", e);
       }

@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { MessageSquare, Loader2, PaperclipIcon, ChevronDown } from "lucide-react";
+import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon } from "lucide-react";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -35,7 +35,12 @@ import {
   PromptInputActionAddAttachments,
   PromptInputActionAddScreenshot,
   useProviderAttachments,
+  PromptInputBody,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputButton,
 } from "@/components/ai-elements/prompt-input";
+import { SpeechInput } from "@/components/ai-elements/speech-input";
 import {
   Attachments,
   Attachment,
@@ -78,6 +83,8 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   const [model, setModel] = useState("gemini-2.5-flash-lite");
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [useThinking, setUseThinking] = useState(false);
+  const [useWebSearch, setUseWebSearch] = useState(false);
 
   const { messages, setMessages, status, sendMessage } = useChat({
     api: "/api/chat",
@@ -138,7 +145,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
         text: message.text || "",
         files: validFiles
       } as any, {
-        body: { chatId, model }
+        body: { chatId, model, useThinking, useWebSearch }
       });
       setInput("");
     }
@@ -251,33 +258,61 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full relative bg-card border border-border/40 border-t-0 shadow-sm rounded-b-xl flex flex-col"
+          className="w-full relative bg-card border border-border/40 border-t-0 shadow-sm rounded-b-xl flex flex-col pt-3"
         >
           <AttachmentsDisplay />
-          <div className="relative w-full p-4 pt-3">
+          <PromptInputBody className="px-4">
             <PromptInputTextarea
               value={input}
               placeholder="Ask me anything..."
               onChange={(e) => setInput(e.currentTarget.value)}
-              className="pl-12 pr-14 min-h-[60px] pb-4 resize-none rounded-lg bg-background font-medium focus-visible:ring-1 focus-visible:ring-primary/40 border-border/50"
+              className="resize-none font-medium focus-visible:ring-1 focus-visible:ring-primary/40"
             />
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="absolute left-6 bottom-[22px] size-8 rounded-full text-muted-foreground transition-colors hover:text-foreground">
-                  <PaperclipIcon className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <PromptInputActionAddAttachments />
-              </DropdownMenuContent>
-            </DropdownMenu>
+          </PromptInputBody>
+          <PromptInputFooter className="px-4 pb-4">
+            <PromptInputTools>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8 rounded-full text-muted-foreground transition-colors hover:text-foreground">
+                    <PaperclipIcon className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <PromptInputActionAddAttachments />
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <PromptInputButton
+                onClick={() => setUseThinking(!useThinking)}
+                variant={useThinking ? "default" : "ghost"}
+                className="rounded-full"
+              >
+                <BrainIcon size={16} />
+                <span className="sr-only sm:not-sr-only">Thinking</span>
+              </PromptInputButton>
+
+              <PromptInputButton
+                onClick={() => setUseWebSearch(!useWebSearch)}
+                variant={useWebSearch ? "default" : "ghost"}
+                className="rounded-full"
+              >
+                <GlobeIcon size={16} />
+                <span className="sr-only sm:not-sr-only">Search</span>
+              </PromptInputButton>
+
+              <SpeechInput
+                onTranscriptionChange={(text) => setInput(prev => prev ? prev + " " + text : text)}
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-full text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+              />
+            </PromptInputTools>
 
             <PromptInputSubmit
               status={status === "streaming" ? "streaming" : "ready"}
-              className="absolute bottom-[22px] right-6 hover:bg-muted font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center"
+              className="hover:bg-muted font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center rounded-full"
             />
-          </div>
+          </PromptInputFooter>
         </PromptInput>
       </div>
     </PromptInputProvider>
