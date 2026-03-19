@@ -160,7 +160,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   }
 
   return (
-    <PromptInputProvider>
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex-1 overflow-hidden relative border border-border/40 rounded-t-xl shadow-sm bg-background flex flex-col">
           {/* Header for Model Selector */}
@@ -315,6 +314,5 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
           </PromptInputFooter>
         </PromptInput>
       </div>
-    </PromptInputProvider>
   );
 }
