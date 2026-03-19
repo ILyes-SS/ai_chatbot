@@ -1,4 +1,4 @@
-import { streamText, type UIMessage, convertToModelMessages } from "ai";
+import { streamText, type UIMessage, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { updateConversation } from "@/actions/conversations";
 import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
 
@@ -40,38 +40,47 @@ export async function POST(req: Request) {
       },
     },
   },
-    onFinish: async ( event ) => {
-      // // The `messages` array from the client has the new user message at the end
+    onFinish: async (event) => {
       const lastUserMessage = messages[messages.length - 1];
       
-      // // We need to map the response to the UIMessage schema expected by the database
-      // // The `response.messages` in newer AI SDK versions contains the generated model messages
-      // const generatedMessages = response.messages.map(m => ({
-      //   id: m.id ?? crypto.randomUUID(),
-      //   role: m.role,
-      //   parts: "parts" in m ? m.parts : [{ type: "text" as const, text: m.content as string }],
-      //   createdAt: new Date()
-      // }));
-      // console.log("EVENT")
-      // console.dir(event, { depth: null })
-      console.log("messages")
-      console.dir(messages, { depth: null })
       try {
-        const modelMessage = { parts: (event.response.messages.map(m => {return m.content})).flat(), role: "assistant", id: event.response.id }
+        const responseMetadata = (event as any).response;
+        const metadata = responseMetadata?.providerMetadata?.google || responseMetadata?.metadata?.google;
+        const groundingMetadata = metadata?.groundingMetadata;
         
-        // console.log("modelMessage")
-        // console.dir(modelMessage, { depth: null })
+        const modelMessage = { 
+          id: event.response.id,
+          role: "assistant", 
+          parts: event.response.messages.flatMap(m => m.content as any[]),
+          metadata: {
+            groundingMetadata,
+            sources: (event as any).sources || (event as any).response?.sources
+          }
+        };
 
-        const {success, error} = await updateConversation(chatId, {
-          messages: [lastUserMessage, modelMessage] as any,
+        await updateConversation(chatId, {
+          messages: [lastUserMessage, modelMessage as any],
         });
-        // console.log("SUCCESS", success)
-        // console.log("ERROR", error)
       } catch (e) {
         console.error("Failed to save conversation messages", e);
       }
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({
+    stream: createUIMessageStream({
+      execute: async ({ writer }) => {
+        writer.merge(result.toUIMessageStream());
+        
+        const sources = await result.sources;
+        if (sources && sources.length > 0) {
+          writer.write({
+            type: 'data-sources',
+            id: `sources-${Date.now()}`,
+            data: sources,
+          } as any);
+        }
+      },
+    }),
+  });
 }

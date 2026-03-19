@@ -48,6 +48,12 @@ import {
   AttachmentRemove,
 } from "@/components/ai-elements/attachments";
 import {
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  Source,
+} from "@/components/ai-elements/sources";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
@@ -207,6 +213,33 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               ) : (
                 messages.map((message) => (
                   <Message from={message.role} key={message.id}>
+                    {message.role === "assistant" && (
+                      (() => {
+                        const sources = [
+                          ...(message.metadata?.sources as any[] || []),
+                          ...(message.parts?.filter(p => 
+                            p.type === "source-url" || 
+                            p.type === "source-document" || 
+                            p.type === "data-sources"
+                          ).flatMap(p => p.type === "data-sources" ? ((p as any).data || []) : [p]) as any[] || [])
+                        ];
+                        if (sources.length === 0) return null;
+                        return (
+                          <Sources className="mt-2 px-4">
+                            <SourcesTrigger count={sources.length} />
+                            <SourcesContent>
+                              {sources.map((source: any, idx: number) => (
+                                <Source 
+                                  key={idx} 
+                                  href={source.url || source.uri} 
+                                  title={source.title || source.url || source.uri} 
+                                />
+                              ))}
+                            </SourcesContent>
+                          </Sources>
+                        );
+                      })()
+                    )}
                     <MessageContent>
                       {message.parts?.map((part, i) => {
                         const key = `${message.id}-part-${i}`;
