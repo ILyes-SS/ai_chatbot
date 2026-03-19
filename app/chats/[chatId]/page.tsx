@@ -2,7 +2,19 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { MessageSquare, Loader2, PaperclipIcon } from "lucide-react";
+import { MessageSquare, Loader2, PaperclipIcon, ChevronDown } from "lucide-react";
+import {
+  ModelSelector,
+  ModelSelectorContent,
+  ModelSelectorEmpty,
+  ModelSelectorGroup,
+  ModelSelectorInput,
+  ModelSelectorItem,
+  ModelSelectorList,
+  ModelSelectorLogo,
+  ModelSelectorName,
+  ModelSelectorTrigger,
+} from "@/components/ai-elements/model-selector";
 import {
   Conversation,
   ConversationContent,
@@ -55,14 +67,20 @@ function AttachmentsDisplay() {
   );
 }
 
+  const availableModels = [
+    { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "google" },
+    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google" },
+  ];
 
 export default function ChatPage({ params }: { params: Promise<{ chatId: string }> }) {
   const unwrappedParams = use(params);
   const chatId = unwrappedParams.chatId;
 
+  const [model, setModel] = useState("gemini-2.5-flash-lite");
+  const [selectorOpen, setSelectorOpen] = useState(false);
+
   const { messages, setMessages, status, sendMessage } = useChat({
     api: "/api/chat",
-    body: { chatId },
   });
 
   const [input, setInput] = useState("");
@@ -119,7 +137,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
       sendMessage({
         text: message.text || "",
         files: validFiles
-      } as any);
+      } as any, {
+        body: { chatId, model }
+      });
       setInput("");
     }
   };
@@ -136,6 +156,40 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
     <PromptInputProvider>
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex-1 overflow-hidden relative border border-border/40 rounded-t-xl shadow-sm bg-background flex flex-col">
+          {/* Header for Model Selector */}
+          <div className="h-14 border-b border-border/40 flex items-center px-4 bg-muted/10 shrink-0">
+            <ModelSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
+              <ModelSelectorTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 px-3 text-muted-foreground hover:text-foreground rounded-lg text-sm font-medium border border-border/50 bg-background/50 hover:bg-muted shadow-sm">
+                  <span className="truncate max-w-[150px]">
+                    {availableModels.find((m) => m.id === model)?.name || "Select Model"}
+                  </span>
+                  <ChevronDown className="ml-2 size-4 opacity-50 shrink-0" />
+                </Button>
+              </ModelSelectorTrigger>
+              <ModelSelectorContent>
+                <ModelSelectorInput placeholder="Search models..." />
+                <ModelSelectorList>
+                  <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
+                  <ModelSelectorGroup>
+                    {availableModels.map((m) => (
+                      <ModelSelectorItem
+                        key={m.id}
+                        value={m.id}
+                        onSelect={(val) => {
+                          setModel(val === m.id.toLowerCase() ? m.id : val);
+                          setSelectorOpen(false);
+                        }}
+                      >
+                        <ModelSelectorLogo provider={m.provider} />
+                        <ModelSelectorName>{m.name}</ModelSelectorName>
+                      </ModelSelectorItem>
+                    ))}
+                  </ModelSelectorGroup>
+                </ModelSelectorList>
+              </ModelSelectorContent>
+            </ModelSelector>
+          </div>
           <Conversation className="flex-1 overflow-y-auto">
             <ConversationContent className="px-4 py-6 md:px-8">
               {messages.length === 0 ? (
@@ -216,7 +270,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <PromptInputActionAddAttachments />
-                <PromptInputActionAddScreenshot />
               </DropdownMenuContent>
             </DropdownMenu>
 
