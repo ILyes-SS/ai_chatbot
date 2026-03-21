@@ -26,23 +26,27 @@ export async function POST(req: Request) {
   const tools = useWebSearch 
     ? { google_search: google.tools.googleSearch({}) } 
     : undefined;
-  const thinkingBudget = useThinking ? 512 : 0;
+    const providerOptions = useThinking 
+    ? {
+        google: {
+          thinkingConfig: {
+            thinkingBudget: 1024, 
+          },
+        },
+      }
+    : undefined;
   const modelToUse = model || "gemini-2.5-flash-lite";
 
   const result = streamText({
     model: gateway(modelToUse),
     messages: await convertToModelMessages(normalizedMessages),
     tools,
-    providerOptions: {
-    google: {
-      thinkingConfig: {
-        thinkingBudget,
-      },
-    },
-  },
+    providerOptions,
     onFinish: async (event) => {
       const lastUserMessage = messages[messages.length - 1];
-      
+      console.log("event");
+      console.dir(event, {depth: null});
+
       try {
         const responseMetadata = (event as any).response;
         const metadata = responseMetadata?.providerMetadata?.google || responseMetadata?.metadata?.google;
@@ -58,6 +62,9 @@ export async function POST(req: Request) {
           }
         };
 
+        // console.log("modelMessage");
+        // console.dir(modelMessage, {depth: null});
+
         await updateConversation(chatId, {
           messages: [lastUserMessage, modelMessage as any],
         });
@@ -70,7 +77,7 @@ export async function POST(req: Request) {
   return createUIMessageStreamResponse({
     stream: createUIMessageStream({
       execute: async ({ writer }) => {
-        writer.merge(result.toUIMessageStream());
+        writer.merge(result.toUIMessageStream({sendReasoning:true}));
         
         const sources = await result.sources;
         if (sources && sources.length > 0) {
