@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon } from "lucide-react";
+import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon, RefreshCcw, Copy, Check } from "lucide-react";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -25,6 +25,8 @@ import {
   Message,
   MessageContent,
   MessageResponse,
+  MessageActions,
+  MessageAction,
 } from "@/components/ai-elements/message";
 import {
   PromptInput,
@@ -78,6 +80,23 @@ function AttachmentsDisplay() {
   );
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <MessageAction
+      tooltip={copied ? "Copied!" : "Copy message"}
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
+    </MessageAction>
+  );
+}
+
   const availableModels = [
     { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "google" },
     { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google" },
@@ -92,7 +111,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   const [useThinking, setUseThinking] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
 
-  const { messages, setMessages, status, sendMessage } = useChat({
+  const { messages, setMessages, status, sendMessage, regenerate } = useChat({
     api: "/api/chat",
   });
 
@@ -280,6 +299,28 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                         <MessageResponse key={`${message.id}-fallback`}>{message.content || message.text}</MessageResponse>
                       )}
                     </MessageContent>
+                    {message.role === "assistant" && status !== "streaming" && (
+                      <MessageActions className="mt-2 px-1">
+                        <CopyButton 
+                          text={
+                            message.parts?.map(p => p.type === "text" ? p.text : "").join("\n") 
+                            // @ts-ignore
+                            || message.content 
+                            // @ts-ignore
+                            || message.text 
+                            || ""
+                          } 
+                        />
+                        {messages[messages.length - 1].id === message.id && (
+                          <MessageAction 
+                            tooltip="Regenerate response" 
+                            onClick={() => regenerate({ body: { chatId, model, useThinking, useWebSearch } })}
+                          >
+                            <RefreshCcw className="size-4" />
+                          </MessageAction>
+                        )}
+                      </MessageActions>
+                    )}
                   </Message>
                 ))
               )}
