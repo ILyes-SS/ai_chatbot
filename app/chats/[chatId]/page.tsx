@@ -57,6 +57,10 @@ import {
   Source,
 } from "@/components/ai-elements/sources";
 import {
+  Suggestions,
+  Suggestion,
+} from "@/components/ai-elements/suggestion";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
@@ -101,6 +105,13 @@ function CopyButton({ text }: { text: string }) {
   const availableModels = [
     { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "google" },
     { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google" },
+  ];
+
+  const initialSuggestions = [
+    "How can you help me today?",
+    "Tell me a joke",
+    "Summarize our conversation",
+    "What are some good productivity tips?",
   ];
 
 export default function ChatPage({ params }: { params: Promise<{ chatId: string }> }) {
@@ -338,6 +349,17 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
           onSubmit={handleSubmit}
           className="w-full relative bg-card border border-border/40 border-t-0 shadow-sm rounded-b-xl flex flex-col pt-3"
         >
+          {messages.length === 0 && (
+            <Suggestions className="px-4 pb-2">
+              {initialSuggestions.map((suggestion) => (
+                <Suggestion
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={(s) => handleSubmit({ text: s, files: [] } as any)}
+                />
+              ))}
+            </Suggestions>
+          )}
           <AttachmentsDisplay />
           <PromptInputBody className="px-4">
             <PromptInputTextarea
