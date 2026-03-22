@@ -21,9 +21,11 @@ interface ConversationItemProps {
   conversation: Conversation;
   expanded: boolean;
   projects: Project[];
+  isActive?: boolean;
+  onDropdownChange?: (isOpen: boolean) => void;
 }
 
-export default function ConversationItem({ conversation, expanded, projects }: ConversationItemProps) {
+export default function ConversationItem({ conversation, expanded, projects, isActive, onDropdownChange }: ConversationItemProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(conversation.title);
@@ -49,6 +51,10 @@ export default function ConversationItem({ conversation, expanded, projects }: C
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    onDropdownChange?.(isDropdownOpen);
+  }, [isDropdownOpen, onDropdownChange]);
 
   // Handle focus for renaming
   useEffect(() => {
@@ -114,7 +120,11 @@ export default function ConversationItem({ conversation, expanded, projects }: C
         ) : (
           <Link
             href={`/chats/${conversation._id}`}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-zinc-300 no-underline text-[13px] transition-colors hover:bg-zinc-800/50 whitespace-nowrap overflow-hidden ${isDropdownOpen ? 'bg-zinc-800/50' : ''}`}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg no-underline text-[13px] transition-colors whitespace-nowrap overflow-hidden ${
+              isActive && expanded 
+                ? 'bg-zinc-800 text-zinc-100 font-medium' 
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+            }`}
             title={conversation.title}
           >
             {expanded && (
