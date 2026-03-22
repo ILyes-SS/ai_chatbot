@@ -127,6 +127,7 @@ export async function getConversationById(id: string) {
 export async function updateConversation(
   id: string,
   data: UpdateConversationData,
+  options?: { overwriteMessages?: boolean }
 ) {
   try {
     const session = await getAuthSession();
@@ -152,10 +153,14 @@ export async function updateConversation(
 
     updateDoc.$set = setFields;
 
-    if (parsed.data.messages && parsed.data.messages.length > 0) {
-      updateDoc.$push = {
-        messages: { $each: parsed.data.messages },
-      };
+    if (parsed.data.messages) {
+      if (options?.overwriteMessages) {
+        updateDoc.$set.messages = parsed.data.messages;
+      } else if (parsed.data.messages.length > 0) {
+        updateDoc.$push = {
+          messages: { $each: parsed.data.messages },
+        };
+      }
     }
 
     const result = await db

@@ -1,5 +1,5 @@
 import { streamText, type UIMessage, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
-import { updateConversation } from "@/actions/conversations";
+import { updateConversation, getConversationById } from "@/actions/conversations";
 import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
 
 export const maxDuration = 30;
@@ -65,9 +65,27 @@ export async function POST(req: Request) {
         // console.log("modelMessage");
         // console.dir(modelMessage, {depth: null});
 
+        const existingConv = await getConversationById(chatId);
+        let mergedMessages = [lastUserMessage, modelMessage as any];
+
+        if (existingConv.success && existingConv.data) {
+          const existingMessages = existingConv.data.messages || [];
+          const userMsgIndex = existingMessages.findIndex((m: any) => m.id === lastUserMessage.id);
+          
+          if (userMsgIndex !== -1) {
+            // Regeneration/Edit: Truncate existing and append new
+            const msgs = [...existingMessages];
+            msgs.splice(userMsgIndex, msgs.length - userMsgIndex, lastUserMessage, modelMessage as any);
+            mergedMessages = msgs;
+          } else {
+            // Normal message: Append
+            mergedMessages = [...existingMessages, lastUserMessage, modelMessage as any];
+          }
+        }
+
         await updateConversation(chatId, {
-          messages: [lastUserMessage, modelMessage as any],
-        });
+          messages: mergedMessages,
+        }, { overwriteMessages: true });
       } catch (e) {
         console.error("Failed to save conversation messages", e);
       }
