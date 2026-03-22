@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
 import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon, RefreshCcw, Copy, Check } from "lucide-react";
 import {
   ModelSelector,
@@ -105,6 +106,7 @@ function CopyButton({ text }: { text: string }) {
 export default function ChatPage({ params }: { params: Promise<{ chatId: string }> }) {
   const unwrappedParams = use(params);
   const chatId = unwrappedParams.chatId;
+  const router = useRouter();
 
   const [model, setModel] = useState("gemini-2.5-flash-lite");
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -113,6 +115,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   const { messages, setMessages, status, sendMessage, regenerate } = useChat({
     api: "/api/chat",
+    onFinish: () => {
+      router.refresh();
+    }
   });
 
   const [input, setInput] = useState("");

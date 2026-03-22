@@ -1,4 +1,4 @@
-import { streamText, type UIMessage, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
+import { streamText, generateText, type UIMessage, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { updateConversation, getConversationById } from "@/actions/conversations";
 import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
 
@@ -67,6 +67,7 @@ export async function POST(req: Request) {
 
         const existingConv = await getConversationById(chatId);
         let mergedMessages = [lastUserMessage, modelMessage as any];
+        let newTitle: string | undefined = undefined;
 
         if (existingConv.success && existingConv.data) {
           const existingMessages = existingConv.data.messages || [];
@@ -80,11 +81,33 @@ export async function POST(req: Request) {
           } else {
             // Normal message: Append
             mergedMessages = [...existingMessages, lastUserMessage, modelMessage as any];
+            
+            if (existingMessages.length === 0 && (existingConv.data as any).title === "New Chat") {
+              try {
+                // @ts-ignore
+                let textContent = lastUserMessage.content || lastUserMessage.text || "";
+                if (!textContent && lastUserMessage.parts) {
+                  textContent = lastUserMessage.parts.filter((p: any) => p.type === 'text').map((p: any) => p.text).join(" ");
+                }
+                console.log("Generating title for prompt: ", textContent);
+                if (textContent) {
+                  const titleResult = await generateText({
+                    model: gateway(modelToUse),
+                    prompt: `Generate a short, concise title (max 5 words) summarizing this chat prompt. Do not use quotes, punctuation at the end, or any prefixes. Prompt: "${textContent}"`
+                  });
+                  newTitle = titleResult.text.trim();
+                  console.log("Generated Title:", newTitle);
+                }
+              } catch (e) {
+                console.error("Failed to generate title", e);
+              }
+            }
           }
         }
 
         await updateConversation(chatId, {
           messages: mergedMessages,
+          ...(newTitle ? { title: newTitle } : {}),
         }, { overwriteMessages: true });
       } catch (e) {
         console.error("Failed to save conversation messages", e);
