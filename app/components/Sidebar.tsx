@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { createConversation } from "@/actions/conversations";
 import SearchModal from "./SearchModal";
 import ConversationItem from "./ConversationItem";
@@ -30,8 +30,11 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
   const [expanded, setExpanded] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [anyDropdownOpen, setAnyDropdownOpen] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
+  const params = useParams();
+  const chatId = params.chatId;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -51,7 +54,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
     try {
       const result = await createConversation({ title: "New Chat" });
       if (result.success && result.data) {
-        router.push(`/chat/${result.data._id}`);
+        router.push(`/chats/${result.data._id}`);
       }
     } finally {
       setIsCreating(false);
@@ -69,7 +72,9 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
   return (
     <aside
       onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
+      onMouseLeave={() => {
+        if (!anyDropdownOpen) setExpanded(false);
+      }}
       className={`relative flex flex-col h-screen bg-zinc-950 border-r border-zinc-800 transition-[width,min-width] duration-200 ease-in-out overflow-hidden z-40 ${
         expanded ? "w-[260px] min-w-[260px]" : "w-[64px] min-w-[64px]"
       }`}
@@ -175,7 +180,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
             </h3>
             <ul className="list-none m-0 p-0">
               {pinned.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
               ))}
             </ul>
           </section>
@@ -203,7 +208,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
             </h3>
             <ul className="list-none m-0 p-0">
               {recent.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
               ))}
             </ul>
           </section>
