@@ -67,6 +67,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { getConversationById } from "@/actions/conversations";
+import { getProjects } from "@/actions/projects";
+import ChatHeader from "@/app/components/ChatHeader";
 
 import { usePromptInputAttachments } from "@/components/ai-elements/prompt-input";
 
@@ -133,6 +135,8 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [conversation, setConversation] = useState<any>(null);
+  const [projects, setProjects] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadChat() {
@@ -141,10 +145,20 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
         return;
       }
       try {
-        const response = await getConversationById(chatId);
-        if (response.success && response.data?.messages) {
-          // Type casting since we trust the database schema matches the expected format
-          setMessages(response.data.messages as any);
+        const [chatRes, projectsRes] = await Promise.all([
+          getConversationById(chatId),
+          getProjects()
+        ]);
+        
+        if (chatRes.success && chatRes.data) {
+          setConversation(chatRes.data);
+          if (chatRes.data.messages) {
+            // Type casting since we trust the database schema matches the expected format
+            setMessages(chatRes.data.messages as any);
+          }
+        }
+        if (projectsRes.success && projectsRes.data) {
+          setProjects(projectsRes.data);
         }
       } catch (e) {
         console.error("Failed to load conversation:", e);
@@ -203,6 +217,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   return (
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex-1 overflow-hidden relative border border-border/40 rounded-t-xl shadow-sm bg-background flex flex-col">
+          {conversation && <ChatHeader conversation={conversation} projects={projects} />}
           {/* Header for Model Selector */}
           <div className="h-14 border-b border-border/40 flex items-center px-4 bg-muted/10 shrink-0">
             <ModelSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
