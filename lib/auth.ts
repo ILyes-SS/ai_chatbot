@@ -4,11 +4,11 @@ import { redisStorage } from "@better-auth/redis-storage";
 import Redis from "ioredis";
 import { clientPromise } from "./db";
 import { sendEmail } from "./email";
+import { redis } from "./redis";
 
 const client = await clientPromise
 const db = client.db("ai_chatbot");
 
-const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
