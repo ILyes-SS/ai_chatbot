@@ -2,10 +2,18 @@ import React from "react";
 import { getProjects } from "@/actions/projects";
 import Link from "next/link";
 import CreateProjectButton from "./CreateProjectButton";
+import ProjectActionsMenu from "./ProjectActionsMenu";
+
+interface Project {
+  _id: string;
+  title: string;
+  context?: string;
+  updatedAt: string | Date;
+}
 
 export default async function ProjectsPage() {
   const result = await getProjects();
-  const projects = result.success && result.data ? result.data : [];
+  const projects = (result.success && result.data ? result.data : []) as Project[];
 
   return (
     <div className="min-h-screen bg-zinc-950 p-8 md:p-12 lg:px-24 w-full">
@@ -40,19 +48,28 @@ export default async function ProjectsPage() {
             </div>
           ) : (
             projects.map((project) => (
-              <Link href={`/projects/${project._id}`} key={project._id} className="block">
-                <div className="border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors flex flex-col justify-between min-h-[160px] bg-zinc-900 shadow-sm cursor-pointer hover:bg-zinc-800/50">
-                  <div>
-                    <h3 className="text-[17px] font-semibold text-white mb-2">{project.title}</h3>
-                    {project.context && (
-                      <p className="text-[13px] text-zinc-400 line-clamp-2">{project.context}</p>
-                    )}
+              <div key={project._id} className="relative group">
+                {/* Clickable card area — Link only wraps the card content */}
+                <Link href={`/projects/${project._id}`} className="block">
+                  <div className="border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors flex flex-col justify-between min-h-[160px] bg-zinc-900 shadow-sm cursor-pointer hover:bg-zinc-800/50">
+                    <div>
+                      {/* Leave right-side padding for the absolutely-positioned menu button */}
+                      <h3 className="text-[17px] font-semibold text-white truncate pr-8 mb-2">{project.title}</h3>
+                      {project.context && (
+                        <p className="text-[13px] text-zinc-400 line-clamp-2">{project.context}</p>
+                      )}
+                    </div>
+                    <p className="text-[12px] text-zinc-500 mt-4">
+                      Updated {new Date(project.updatedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <p className="text-[12px] text-zinc-500 mt-4">
-                    Updated {new Date(project.updatedAt).toLocaleDateString()}
-                  </p>
+                </Link>
+
+                {/* Menu sits OUTSIDE the Link so its events never trigger navigation */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ProjectActionsMenu project={project} />
                 </div>
-              </Link>
+              </div>
             ))
           )}
         </div>
