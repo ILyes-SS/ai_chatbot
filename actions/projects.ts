@@ -20,6 +20,8 @@ function serialize(doc: WithId<Document>) {
   return {
     ...doc,
     _id: doc._id.toString(),
+    updatedAt: doc.updatedAt?.toISOString() || null,
+    createdAt: doc.createdAt?.toISOString() || null,
   };
 }
 
