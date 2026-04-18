@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { deleteProject } from "@/actions/projects";
+import { useProjects } from "@/app/stores/projects-store";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -26,19 +26,17 @@ interface ProjectActionsMenuProps {
 export default function ProjectActionsMenu({ project }: ProjectActionsMenuProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const { optimisticDeleteProject } = useProjects();
   const router = useRouter();
 
   const handleDelete = () => {
-    startTransition(async () => {
-      const result = await deleteProject(project._id);
-      if (result.success) {
-        setShowDeleteModal(false);
-        router.refresh();
-      } else {
-        console.error(result.error);
-      }
-    });
+    // Optimistic: project card vanishes from grid instantly
+    optimisticDeleteProject(project._id);
+    setShowDeleteModal(false);
+    // If we're on the project detail page, navigate away
+    if (window.location.pathname.includes(`/projects/${project._id}`)) {
+      router.push("/projects");
+    }
   };
 
   return (
@@ -81,7 +79,7 @@ export default function ProjectActionsMenu({ project }: ProjectActionsMenuProps)
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         title={project.title}
-        isPending={isPending}
+        isPending={false}
       />
     </div>
   );

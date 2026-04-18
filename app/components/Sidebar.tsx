@@ -4,29 +4,12 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { createConversation } from "@/actions/conversations";
+import { useConversations } from "@/app/stores/conversations-store";
+import { useProjects } from "@/app/stores/projects-store";
 import SearchModal from "./SearchModal";
 import ConversationItem from "./ConversationItem";
 
-interface Conversation {
-  _id: string;
-  title: string;
-  pinned: boolean;
-  updatedAt: string;
-}
-
-interface Project {
-  _id: string;
-  title: string;
-  updatedAt: string;
-}
-
-interface SidebarProps {
-  conversations: Conversation[];
-  projects: Project[];
-}
-
-export default function Sidebar({ conversations = [], projects = [] }: SidebarProps) {
+export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -35,6 +18,9 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
   const router = useRouter();
   const params = useParams();
   const chatId = params.chatId;
+
+  const { conversations, optimisticAddConversation } = useConversations();
+  const { projects } = useProjects();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -52,9 +38,9 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
     if (isCreating) return;
     setIsCreating(true);
     try {
-      const result = await createConversation({ title: "New Chat" });
-      if (result.success && result.data) {
-        router.push(`/chats/${result.data._id}`);
+      const realId = await optimisticAddConversation({ title: "New Chat" });
+      if (realId) {
+        router.push(`/chats/${realId}`);
       }
     } finally {
       setIsCreating(false);
@@ -180,7 +166,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
             </h3>
             <ul className="list-none m-0 p-0">
               {pinned.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
               ))}
             </ul>
           </section>
@@ -208,7 +194,7 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
             </h3>
             <ul className="list-none m-0 p-0">
               {recent.map((c) => (
-                <ConversationItem key={c._id} conversation={c} expanded={expanded} projects={projects} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
+                <ConversationItem key={c._id} conversation={c} expanded={expanded} isActive={chatId === c._id} onDropdownChange={setAnyDropdownOpen} />
               ))}
             </ul>
           </section>
@@ -268,8 +254,6 @@ export default function Sidebar({ conversations = [], projects = [] }: SidebarPr
       <SearchModal 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
-        conversations={conversations}
-        projects={projects}
       />
     </aside>
   );

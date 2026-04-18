@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import { updateConversation } from "@/actions/conversations";
+import { useState, useEffect } from "react";
+import { useConversations } from "@/app/stores/conversations-store";
 
 interface Project {
   _id: string;
@@ -17,7 +17,7 @@ interface MoveChatModalProps {
 
 export default function MoveChatModal({ isOpen, onClose, conversation, projects }: MoveChatModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const { optimisticUpdateConversation } = useConversations();
 
   // Close on Escape
   useEffect(() => {
@@ -37,10 +37,9 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
   );
 
   const handleProjectAssign = (projectId: string | null) => {
-    startTransition(async () => {
-      await updateConversation(conversation._id, { projectId });
-      onClose();
-    });
+    // Optimistic: projectId updates instantly, modal closes
+    optimisticUpdateConversation(conversation._id, { projectId });
+    onClose();
   };
 
   return (
@@ -76,11 +75,10 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
             </svg>
             <input
               autoFocus
-              className="w-full h-11 pl-10 pr-4 bg-white border border-zinc-200 rounded-t-xl rounded-b-none focus:outline-none focus:border-zinc-300 text-[14px] text-zinc-900 placeholder:text-zinc-400 transition-colors disabled:opacity-50"
+              className="w-full h-11 pl-10 pr-4 bg-white border border-zinc-200 rounded-t-xl rounded-b-none focus:outline-none focus:border-zinc-300 text-[14px] text-zinc-900 placeholder:text-zinc-400 transition-colors"
               placeholder="Search or create a project"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              disabled={isPending}
             />
           </div>
 
@@ -91,8 +89,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
             {conversation.projectId && (
               <button 
                 onClick={() => handleProjectAssign(null)}
-                disabled={isPending}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-50 transition-colors text-zinc-600 disabled:opacity-50 border-b border-zinc-100"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-50 transition-colors text-zinc-600 border-b border-zinc-100"
               >
                 <div className="w-[18px] flex justify-center text-zinc-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -106,7 +103,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
 
             {filteredProjects.length === 0 ? (
               <div className="px-4 py-6 text-center text-[14px] text-zinc-500">
-                No active projects match "{searchQuery}"
+                No active projects match &quot;{searchQuery}&quot;
               </div>
             ) : (
               <ul className="flex flex-col p-1.5">
@@ -116,8 +113,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
                     <li key={p._id}>
                       <button
                         onClick={() => handleProjectAssign(p._id)}
-                        disabled={isPending}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors disabled:opacity-50 ${isAssigned ? 'bg-zinc-100/80 text-zinc-900' : 'text-zinc-700 hover:bg-zinc-50'}`}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${isAssigned ? 'bg-zinc-100/80 text-zinc-900' : 'text-zinc-700 hover:bg-zinc-50'}`}
                       >
                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-900">
                             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>

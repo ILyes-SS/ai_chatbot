@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
-import { updateProject } from "@/actions/projects";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useProjects } from "@/app/stores/projects-store";
 
 interface EditProjectModalProps {
   isOpen: boolean;
@@ -17,8 +16,7 @@ interface EditProjectModalProps {
 export default function EditProjectModal({ isOpen, onClose, project }: EditProjectModalProps) {
   const [title, setTitle] = useState(project.title);
   const [context, setContext] = useState(project.context || "");
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  const { optimisticUpdateProject } = useProjects();
 
   // Reset values when modal opens or project changes
   useEffect(() => {
@@ -32,15 +30,9 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
     e.preventDefault();
     if (!title.trim()) return;
 
-    startTransition(async () => {
-      const result = await updateProject(project._id, { title, context });
-      if (result.success) {
-        onClose();
-        router.refresh(); // Or handle update in UI
-      } else {
-        console.error(result.error);
-      }
-    });
+    // Optimistic: title/context update reflected instantly in project card and detail page
+    optimisticUpdateProject(project._id, { title, context });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -57,12 +49,11 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
         <div className="flex items-start justify-between p-6 pb-4">
           <div>
             <h2 className="text-[20px] font-semibold text-white tracking-tight">Edit project</h2>
-            <p className="text-[14px] text-zinc-400 mt-1">Update your project's title and context.</p>
+            <p className="text-[14px] text-zinc-400 mt-1">Update your project&apos;s title and context.</p>
           </div>
           <button 
             onClick={onClose}
             className="p-1.5 -mr-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-            disabled={isPending}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" />
@@ -84,7 +75,6 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
                 placeholder="e.g. Marketing Campaign"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                disabled={isPending}
               />
             </div>
             <div>
@@ -95,7 +85,6 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
                 placeholder="Add some context or description about this project..."
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
-                disabled={isPending}
               />
             </div>
           </div>
@@ -104,24 +93,16 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
             <button
               type="button"
               onClick={onClose}
-              disabled={isPending}
               className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending || !title.trim()}
+              disabled={!title.trim()}
               className="px-4 py-2.5 rounded-xl text-sm font-medium bg-white text-zinc-950 hover:bg-zinc-200 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[120px]"
             >
-              {isPending ? (
-                <svg className="animate-spin h-5 w-5 text-zinc-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                "Save Changes"
-              )}
+              Save Changes
             </button>
           </div>
         </form>

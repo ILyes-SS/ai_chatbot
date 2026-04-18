@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { updateConversation } from "@/actions/conversations";
+import { useConversations } from "@/app/stores/conversations-store";
 import ChatActionsMenu from "./ChatActionsMenu";
 
 interface Conversation {
@@ -12,25 +12,26 @@ interface Conversation {
   projectId?: string | null;
 }
 
-interface Project {
-  _id: string;
-  title: string;
-}
-
 interface ConversationItemProps {
   conversation: Conversation;
   expanded: boolean;
-  projects: Project[];
   isActive?: boolean;
   onDropdownChange?: (isOpen: boolean) => void;
 }
 
-export default function ConversationItem({ conversation, expanded, projects, isActive, onDropdownChange }: ConversationItemProps) {
+export default function ConversationItem({ conversation, expanded, isActive, onDropdownChange }: ConversationItemProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(conversation.title);
-  const [isPending, startTransition] = useTransition();
+  const { optimisticUpdateConversation } = useConversations();
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync rename value when conversation title changes (e.g. from optimistic update elsewhere)
+  useEffect(() => {
+    if (!isRenaming) {
+      setRenameValue(conversation.title);
+    }
+  }, [conversation.title, isRenaming]);
 
   // Handle focus for renaming
   useEffect(() => {
@@ -47,10 +48,9 @@ export default function ConversationItem({ conversation, expanded, projects, isA
       return;
     }
 
-    startTransition(async () => {
-      await updateConversation(conversation._id, { title: renameValue.trim() });
-      setIsRenaming(false);
-    });
+    // Optimistic update — title changes instantly in sidebar
+    optimisticUpdateConversation(conversation._id, { title: renameValue.trim() });
+    setIsRenaming(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -73,7 +73,6 @@ export default function ConversationItem({ conversation, expanded, projects, isA
             onBlur={handleRenameSubmit}
             onKeyDown={handleKeyDown}
             className="flex-1 bg-transparent border-none outline-none text-[13px] text-zinc-100 placeholder:text-zinc-500"
-            disabled={isPending}
           />
         </div>
       ) : (
@@ -96,7 +95,6 @@ export default function ConversationItem({ conversation, expanded, projects, isA
               <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                 <ChatActionsMenu
                   conversation={conversation}
-                  projects={projects}
                   onRename={() => setIsRenaming(true)}
                   onOpenChange={onDropdownChange}
                   trigger={

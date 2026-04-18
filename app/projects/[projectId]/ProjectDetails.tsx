@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Edit2 } from "lucide-react";
+import { useProjects } from "@/app/stores/projects-store";
 import EditProjectModal from "../EditProjectModal";
 
 export interface Project {
@@ -29,8 +30,12 @@ interface ProjectDetailsProps {
   conversations: Conversation[];
 }
 
-export default function ProjectDetails({ project, conversations }: ProjectDetailsProps) {
+export default function ProjectDetails({ project: initialProject, conversations }: ProjectDetailsProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { projects } = useProjects();
+
+  // Get live project data from the store (reflects optimistic edits)
+  const project = projects.find((p) => p._id === initialProject._id) as Project | undefined ?? initialProject;
 
   const formatRelativeTime = (dateInput: string | Date | null) => {
     if (!dateInput) return "No messages yet";

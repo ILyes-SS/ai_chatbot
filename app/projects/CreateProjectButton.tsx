@@ -1,52 +1,55 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { createProject } from "@/actions/projects";
+import { useState } from "react";
+import { useProjects } from "@/app/stores/projects-store";
 import { useRouter } from "next/navigation";
 
 export default function CreateProjectButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [context, setContext] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { optimisticAddProject } = useProjects();
   const router = useRouter();
 
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => {
-    if (isPending) return;
+    if (isSubmitting) return;
     setIsOpen(false);
     setTitle("");
     setContext("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    startTransition(async () => {
-      const result = await createProject({ title, context });
-      if (result.success && result.data) {
+    setIsSubmitting(true);
+    try {
+      // Optimistic: new project card appears in list instantly
+      const result = await optimisticAddProject({ title, context });
+      if (result) {
         handleClose();
-        router.push(`/projects/${result.data._id}`);
-      } else {
-        console.error(result.error);
+        router.push(`/projects/${result._id}`);
       }
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <>
        
-        <button 
-          onClick={handleOpen}
-          className="flex cursor-pointer items-center gap-2 bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-700 transition border border-zinc-700"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-          New project
-        </button>
+      <button 
+        onClick={handleOpen}
+        className="flex cursor-pointer items-center gap-2 bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-700 transition border border-zinc-700"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        New project
+      </button>
       
 
       {/* Modal */}
@@ -64,7 +67,7 @@ export default function CreateProjectButton() {
               <button 
                 onClick={handleClose}
                 className="p-1.5 -mr-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                disabled={isPending}
+                disabled={isSubmitting}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 6 6 18" />
@@ -86,7 +89,7 @@ export default function CreateProjectButton() {
                     placeholder="e.g. Marketing Campaign"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    disabled={isPending}
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -97,7 +100,7 @@ export default function CreateProjectButton() {
                     placeholder="Add some context or description about this project..."
                     value={context}
                     onChange={(e) => setContext(e.target.value)}
-                    disabled={isPending}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -106,17 +109,17 @@ export default function CreateProjectButton() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  disabled={isPending}
+                  disabled={isSubmitting}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending || !title.trim()}
+                  disabled={isSubmitting || !title.trim()}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium bg-white text-zinc-950 hover:bg-zinc-200 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[120px]"
                 >
-                  {isPending ? (
+                  {isSubmitting ? (
                     <svg className="animate-spin h-5 w-5 text-zinc-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

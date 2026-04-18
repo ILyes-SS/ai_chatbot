@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Share, Check, Copy } from "lucide-react";
-import { updateConversation } from "@/actions/conversations";
+import { useConversations } from "@/app/stores/conversations-store";
 import ChatActionsMenu from "./ChatActionsMenu";
 import { Button } from "@/components/ui/button";
 
@@ -13,32 +13,24 @@ interface Conversation {
   projectId?: string | null;
 }
 
-interface Project {
-  _id: string;
-  title: string;
-}
-
 interface ChatHeaderProps {
   conversation: Conversation;
-  projects: Project[];
 }
 
-export default function ChatHeader({ conversation, projects }: ChatHeaderProps) {
+export default function ChatHeader({ conversation }: ChatHeaderProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(conversation?.title || "");
-  const [displayTitle, setDisplayTitle] = useState(conversation?.title || "");
-  const [isPending, startTransition] = useTransition();
   const [shared, setShared] = useState(false);
+  const { optimisticUpdateConversation } = useConversations();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync state when conversation prop changes (e.g. initial load)
+  // Sync state when conversation prop changes (e.g. from optimistic update)
   useEffect(() => {
     if (conversation?.title && !isRenaming) {
       setRenameValue(conversation.title);
-      setDisplayTitle(conversation.title);
     }
-  }, [conversation?.title]);
+  }, [conversation?.title, isRenaming]);
 
   useEffect(() => {
     if (isRenaming && inputRef.current) {
@@ -50,26 +42,24 @@ export default function ChatHeader({ conversation, projects }: ChatHeaderProps) 
   if (!conversation) return null;
 
   const handleRenameSubmit = () => {
-    if (!renameValue.trim() || renameValue === displayTitle) {
+    if (!renameValue.trim() || renameValue === conversation.title) {
       setIsRenaming(false);
-      setRenameValue(displayTitle);
+      setRenameValue(conversation.title);
       return;
     }
 
     const newTitle = renameValue.trim();
     setIsRenaming(false);
-    setDisplayTitle(newTitle); // Optimistic update
 
-    startTransition(async () => {
-      await updateConversation(conversation._id, { title: newTitle });
-    });
+    // Optimistic update — both header and sidebar update simultaneously
+    optimisticUpdateConversation(conversation._id, { title: newTitle });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleRenameSubmit();
     if (e.key === "Escape") {
       setIsRenaming(false);
-     setRenameValue(displayTitle);
+     setRenameValue(conversation.title);
     }
   };
 
@@ -91,7 +81,6 @@ export default function ChatHeader({ conversation, projects }: ChatHeaderProps) 
             onBlur={handleRenameSubmit}
             onKeyDown={handleKeyDown}
             className=" bg-transparent border-none outline-none text-lg font-semibold text-foreground focus:ring-0 p-0"
-            disabled={isPending}
           />
         ) : (
           <h1 
@@ -99,7 +88,7 @@ export default function ChatHeader({ conversation, projects }: ChatHeaderProps) 
             onClick={() => setIsRenaming(true)}
             title="Click to rename"
           >
-            {displayTitle}
+            {conversation.title}
           </h1>
         )}
       </div>
@@ -117,7 +106,6 @@ export default function ChatHeader({ conversation, projects }: ChatHeaderProps) 
 
         <ChatActionsMenu
           conversation={conversation}
-          projects={projects}
           onRename={() => setIsRenaming(true)}
           onDelete={() => {
             window.location.href = "/"; // Redirect to home after delete since we are on the page

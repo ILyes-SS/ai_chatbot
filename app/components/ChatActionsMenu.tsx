@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
   MoreVertical,
   Star,
@@ -8,7 +8,8 @@ import {
   FolderInput,
   Trash2,
 } from "lucide-react";
-import { updateConversation, deleteConversation } from "@/actions/conversations";
+import { useConversations } from "@/app/stores/conversations-store";
+import { useProjects } from "@/app/stores/projects-store";
 import MoveChatModal from "./MoveChatModal";
 import DeleteChatModal from "./DeleteChatModal";
 import {
@@ -26,14 +27,8 @@ interface Conversation {
   projectId?: string | null;
 }
 
-interface Project {
-  _id: string;
-  title: string;
-}
-
 interface ChatActionsMenuProps {
   conversation: Conversation;
-  projects: Project[];
   /** Called when the user selects "Rename" from the dropdown */
   onRename?: () => void;
   /** Called after the conversation is deleted */
@@ -48,32 +43,27 @@ interface ChatActionsMenuProps {
 
 export default function ChatActionsMenu({
   conversation,
-  projects,
   onRename,
   onDelete,
   trigger,
   align = "end",
   onOpenChange,
 }: ChatActionsMenuProps) {
-  const [isPinned, setIsPinned] = useState(conversation.pinned);
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const { optimisticUpdateConversation, optimisticDeleteConversation } = useConversations();
+  const { projects } = useProjects();
 
   const handleTogglePin = () => {
-    const newPinned = !isPinned;
-    setIsPinned(newPinned);
-    startTransition(async () => {
-      await updateConversation(conversation._id, { pinned: newPinned });
-    });
+    // Optimistic: conversation moves between Pinned/Recent instantly
+    optimisticUpdateConversation(conversation._id, { pinned: !conversation.pinned });
   };
 
   const handleDelete = () => {
-    startTransition(async () => {
-      await deleteConversation(conversation._id);
-      setShowDeleteModal(false);
-      onDelete?.();
-    });
+    // Optimistic: conversation vanishes from sidebar instantly
+    optimisticDeleteConversation(conversation._id);
+    setShowDeleteModal(false);
+    onDelete?.();
   };
 
   return (
@@ -87,24 +77,23 @@ export default function ChatActionsMenu({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} className="w-48">
-          <DropdownMenuItem onClick={handleTogglePin} disabled={isPending}>
-            <Star className={`mr-2 size-4 ${isPinned ? "fill-primary text-primary" : ""}`} />
-            {isPinned ? "Unstar" : "Star"}
+          <DropdownMenuItem onClick={handleTogglePin}>
+            <Star className={`mr-2 size-4 ${conversation.pinned ? "fill-primary text-primary" : ""}`} />
+            {conversation.pinned ? "Unstar" : "Star"}
           </DropdownMenuItem>
           {onRename && (
-            <DropdownMenuItem onClick={onRename} disabled={isPending}>
+            <DropdownMenuItem onClick={onRename}>
               <Pencil className="mr-2 size-4" />
               Rename
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={() => setShowMoveModal(true)} disabled={isPending}>
+          <DropdownMenuItem onClick={() => setShowMoveModal(true)}>
             <FolderInput className="mr-2 size-4" />
             {conversation.projectId ? "Change project" : "Add to project"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setShowDeleteModal(true)}
-            disabled={isPending}
             className="text-destructive focus:bg-destructive/10 focus:text-destructive"
           >
             <Trash2 className="mr-2 size-4" />
@@ -124,7 +113,7 @@ export default function ChatActionsMenu({
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         title={conversation.title}
-        isPending={isPending}
+        isPending={false}
       />
     </>
   );

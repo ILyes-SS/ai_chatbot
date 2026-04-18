@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useConversations } from "@/app/stores/conversations-store";
+import { useProjects } from "@/app/stores/projects-store";
 
 interface SearchItem {
   _id: string;
@@ -14,26 +15,18 @@ interface SearchItem {
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  conversations: any[];
-  projects: any[];
 }
 
-export default function SearchModal({ isOpen, onClose, conversations, projects }: SearchModalProps) {
+export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const router = useRouter();
-
-
+  const { conversations } = useConversations();
+  const { projects } = useProjects();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
-      }
-      // Command/Ctrl + K to open
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        if (!isOpen) { // This component only handles close internally, let's leave global open to Sidebar or Layout if preferred. But for now at least we handle escape.
-        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -43,16 +36,16 @@ export default function SearchModal({ isOpen, onClose, conversations, projects }
   if (!isOpen) return null;
 
   const items: SearchItem[] = [
-    ...(conversations || []).map((c: any) => ({
+    ...(conversations || []).map((c) => ({
       _id: c._id,
       title: c.title || "Untitled Chat",
-      updatedAt: c.updatedAt,
+      updatedAt: c.updatedAt || "",
       type: "conversation" as const
     })),
-    ...(projects || []).map((p: any) => ({
+    ...(projects || []).map((p) => ({
       _id: p._id,
       title: p.title || "Untitled Project",
-      updatedAt: p.updatedAt,
+      updatedAt: (p.updatedAt as string) || "",
       type: "project" as const
     }))
   ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
@@ -64,7 +57,7 @@ export default function SearchModal({ isOpen, onClose, conversations, projects }
   const handleSelect = (item: SearchItem) => {
     onClose();
     if (item.type === "conversation") {
-      router.push(`/chat/${item._id}`);
+      router.push(`/chats/${item._id}`);
     } else {
       router.push(`/projects/${item._id}`);
     }
@@ -104,7 +97,7 @@ export default function SearchModal({ isOpen, onClose, conversations, projects }
         {/* Results Body */}
         <div className="max-h-[50vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
           {filteredItems.length === 0 ? (
-            <div className="p-8 text-center text-sm text-zinc-500">No results found for "{query}"</div>
+            <div className="p-8 text-center text-sm text-zinc-500">No results found for &quot;{query}&quot;</div>
           ) : (
             <ul className="flex flex-col gap-1">
               {filteredItems.map(item => (

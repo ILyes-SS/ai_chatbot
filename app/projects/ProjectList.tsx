@@ -2,32 +2,28 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useProjects } from "@/app/stores/projects-store";
 import ProjectActionsMenu from "./ProjectActionsMenu";
 
-interface Project {
-  _id: string;
-  title: string;
-  context?: string;
-  updatedAt: string | Date;
-}
-
 interface ProjectListProps {
-  initialProjects: Project[];
+  /** Initial projects are now only used for hydration; the store is the source of truth */
+  initialProjects?: any[];
 }
 
-export default function ProjectList({ initialProjects }: ProjectListProps) {
+export default function ProjectList({ initialProjects: _unused }: ProjectListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { projects } = useProjects();
 
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) return initialProjects;
+    if (!searchQuery.trim()) return projects;
     
     const query = searchQuery.toLowerCase();
-    return initialProjects.filter(
+    return projects.filter(
       (project) =>
         project.title.toLowerCase().includes(query) ||
         (project.context && project.context.toLowerCase().includes(query))
     );
-  }, [searchQuery, initialProjects]);
+  }, [searchQuery, projects]);
 
   return (
     <>
@@ -63,7 +59,7 @@ export default function ProjectList({ initialProjects }: ProjectListProps) {
           </div>
         ) : (
           filteredProjects.map((project) => (
-            <div key={project._id} className="relative group">
+            <div key={project._id} className={`relative group ${project._optimistic ? "opacity-70" : ""}`}>
               <Link href={`/projects/${project._id}`} className="block">
                 <div className="border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors flex flex-col justify-between min-h-[160px] bg-zinc-900 shadow-sm cursor-pointer hover:bg-zinc-800/50">
                   <div>
@@ -73,7 +69,7 @@ export default function ProjectList({ initialProjects }: ProjectListProps) {
                     )}
                   </div>
                   <p className="text-[12px] text-zinc-500 mt-4">
-                    Updated {new Date(project.updatedAt).toLocaleDateString()}
+                    Updated {new Date(project.updatedAt as string).toLocaleDateString()}
                   </p>
                 </div>
               </Link>
