@@ -15,9 +15,17 @@ const toolInvocationPartSchema = z.object({
   output: z.unknown().optional(),
 });
 
+const filePartSchema = z.object({
+  type: z.literal("file"),
+  mediaType: z.string(),
+  url: z.string(),
+  filename: z.string().optional(),
+});
+
 const messagePartSchema = z.discriminatedUnion("type", [
   textPartSchema,
   toolInvocationPartSchema,
+  filePartSchema,
 ]);
 
 // --- AI SDK UIMessage schema ---

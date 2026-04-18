@@ -23,6 +23,8 @@ function serialize(doc: WithId<Document>) {
     projectId: doc.projectId instanceof ObjectId
       ? doc.projectId.toString()
       : doc.projectId ?? null,
+    updatedAt: doc.updatedAt?.toISOString() || null,
+    createdAt: doc.createdAt?.toISOString() || null,
   };
 }
 
@@ -84,6 +86,32 @@ export async function getConversations() {
     const conversations = await db
       .collection(COLLECTION)
       .find({ userId: session.user.id })
+      .sort({ pinned: -1, updatedAt: -1 })
+      .toArray();
+
+    return { success: true as const, data: conversations.map(serialize) };
+  } catch (error) {
+    return {
+      success: false as const,
+      error: error instanceof Error ? error.message : "Failed to fetch conversations",
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Read — all for a specific project
+// ---------------------------------------------------------------------------
+export async function getConversationsByProjectId(projectId: string) {
+  try {
+    const session = await getAuthSession();
+    const db = await getDb();
+
+    const conversations = await db
+      .collection(COLLECTION)
+      .find({ 
+        userId: session.user.id,
+        projectId: new ObjectId(projectId)
+      })
       .sort({ pinned: -1, updatedAt: -1 })
       .toArray();
 
