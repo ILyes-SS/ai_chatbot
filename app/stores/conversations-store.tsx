@@ -69,6 +69,34 @@ export function ConversationsProvider({ initialConversations, children }: Conver
   );
   const { showToast } = useToast();
 
+  const deletedIds = useRef<Set<string>>(new Set());
+  const pendingUpdates = useRef<Map<string, Partial<ConversationItem>>>(new Map());
+
+  // Sync with server data on router.refresh() 
+  // We merge optimistic items with fresh server items.
+  React.useEffect(() => {
+    setConversations((prev) => {
+      const optimisticIds = new Set(prev.filter(c => c._optimistic).map(c => c._id));
+      
+      // Filter out items that are currently pending deletion
+      let freshItems = initialConversations.filter(
+        c => !optimisticIds.has(c._id) && !deletedIds.current.has(c._id)
+      );
+
+      // Apply any pending updates to the fresh items so they don't revert to stale server state
+      if (pendingUpdates.current.size > 0) {
+        freshItems = freshItems.map(c => {
+          const updates = pendingUpdates.current.get(c._id);
+          return updates ? { ...c, ...updates } : c;
+        });
+      }
+
+      const optimisticItems = prev.filter(c => c._optimistic);
+      
+      return sortConversations([...optimisticItems, ...freshItems]);
+    });
+  }, [initialConversations]);
+
   // Use a ref to always have access to the latest state in async callbacks
   const conversationsRef = useRef(conversations);
   conversationsRef.current = conversations;
@@ -126,6 +154,9 @@ export function ConversationsProvider({ initialConversations, children }: Conver
     (id: string, data: UpdateConversationData, options?: { overwriteMessages?: boolean }) => {
       const snapshot = conversationsRef.current;
 
+      // Track pending update to protect against stale server pushes during navigation
+      pendingUpdates.current.set(id, { ...pendingUpdates.current.get(id), ...data });
+
       // Optimistic: apply updates immediately
       setConversations((prev) =>
         sortConversations(
@@ -142,12 +173,14 @@ export function ConversationsProvider({ initialConversations, children }: Conver
 
       // Fire server action
       serverUpdateConversation(id, data, options).then((result) => {
+        pendingUpdates.current.delete(id);
         if (!result.success) {
           // Rollback
           setConversations(sortConversations(snapshot));
           showToast(result.error || "Failed to update conversation", "error");
         }
       }).catch(() => {
+        pendingUpdates.current.delete(id);
         setConversations(sortConversations(snapshot));
         showToast("Failed to update conversation", "error");
       });
@@ -160,15 +193,20 @@ export function ConversationsProvider({ initialConversations, children }: Conver
     (id: string) => {
       const snapshot = conversationsRef.current;
 
+      // Track deletion to protect against stale server pushes during navigation
+      deletedIds.current.add(id);
+
       // Optimistic: remove immediately
       setConversations((prev) => prev.filter((c) => c._id !== id));
 
       serverDeleteConversation(id).then((result) => {
         if (!result.success) {
+          deletedIds.current.delete(id);
           setConversations(sortConversations(snapshot));
           showToast(result.error || "Failed to delete conversation", "error");
         }
       }).catch(() => {
+        deletedIds.current.delete(id);
         setConversations(sortConversations(snapshot));
         showToast("Failed to delete conversation", "error");
       });

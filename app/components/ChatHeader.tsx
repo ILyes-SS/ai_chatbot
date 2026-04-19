@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Share, Check, Copy } from "lucide-react";
 import { useConversations } from "@/app/stores/conversations-store";
+import { useRouter } from "next/navigation";
 import ChatActionsMenu from "./ChatActionsMenu";
 import { Button } from "@/components/ui/button";
 
@@ -17,20 +18,26 @@ interface ChatHeaderProps {
   conversation: Conversation;
 }
 
-export default function ChatHeader({ conversation }: ChatHeaderProps) {
+export default function ChatHeader({ conversation: initialConversation }: ChatHeaderProps) {
   const [isRenaming, setIsRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState(conversation?.title || "");
+  const { conversations, optimisticUpdateConversation } = useConversations();
+  const router = useRouter();
+  
+  // Use live data from the store so that any server updates (like auto-naming) 
+  // or optimistic updates are immediately reflected here.
+  const liveConversation = conversations.find(c => c._id === initialConversation?._id) || initialConversation;
+  
+  const [renameValue, setRenameValue] = useState(liveConversation?.title || "");
   const [shared, setShared] = useState(false);
-  const { optimisticUpdateConversation } = useConversations();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync state when conversation prop changes (e.g. from optimistic update)
+  // Sync state when conversation title changes externally
   useEffect(() => {
-    if (conversation?.title && !isRenaming) {
-      setRenameValue(conversation.title);
+    if (liveConversation?.title && !isRenaming) {
+      setRenameValue(liveConversation.title);
     }
-  }, [conversation?.title, isRenaming]);
+  }, [liveConversation?.title, isRenaming]);
 
   useEffect(() => {
     if (isRenaming && inputRef.current) {
@@ -39,12 +46,12 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
     }
   }, [isRenaming]);
 
-  if (!conversation) return null;
+  if (!liveConversation) return null;
 
   const handleRenameSubmit = () => {
-    if (!renameValue.trim() || renameValue === conversation.title) {
+    if (!renameValue.trim() || renameValue === liveConversation.title) {
       setIsRenaming(false);
-      setRenameValue(conversation.title);
+      setRenameValue(liveConversation.title);
       return;
     }
 
@@ -52,14 +59,14 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
     setIsRenaming(false);
 
     // Optimistic update — both header and sidebar update simultaneously
-    optimisticUpdateConversation(conversation._id, { title: newTitle });
+    optimisticUpdateConversation(liveConversation._id, { title: newTitle });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleRenameSubmit();
     if (e.key === "Escape") {
       setIsRenaming(false);
-     setRenameValue(conversation.title);
+     setRenameValue(liveConversation.title);
     }
   };
 
@@ -88,7 +95,7 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
             onClick={() => setIsRenaming(true)}
             title="Click to rename"
           >
-            {conversation.title}
+            {liveConversation.title}
           </h1>
         )}
       </div>
@@ -105,10 +112,15 @@ export default function ChatHeader({ conversation }: ChatHeaderProps) {
         </Button>
 
         <ChatActionsMenu
-          conversation={conversation}
+          conversation={liveConversation}
           onRename={() => setIsRenaming(true)}
           onDelete={() => {
-            window.location.href = "/"; // Redirect to home after delete since we are on the page
+            const remaining = conversations.filter(c => c._id !== liveConversation._id);
+            if (remaining.length > 0) {
+              router.push(`/chats/${remaining[0]._id}`);
+            } else {
+              router.push("/");
+            }
           }}
           trigger={
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">

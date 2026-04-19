@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useConversations } from "@/app/stores/conversations-store";
 import ChatActionsMenu from "./ChatActionsMenu";
 
@@ -22,7 +23,8 @@ interface ConversationItemProps {
 export default function ConversationItem({ conversation, expanded, isActive, onDropdownChange }: ConversationItemProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(conversation.title);
-  const { optimisticUpdateConversation } = useConversations();
+  const { conversations, optimisticUpdateConversation } = useConversations();
+  const router = useRouter();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -97,6 +99,16 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
                   conversation={conversation}
                   onRename={() => setIsRenaming(true)}
                   onOpenChange={onDropdownChange}
+                  onDelete={() => {
+                    if (isActive) {
+                      const remaining = conversations.filter(c => c._id !== conversation._id);
+                      if (remaining.length > 0) {
+                        router.push(`/chats/${remaining[0]._id}`);
+                      } else {
+                        router.push("/");
+                      }
+                    }
+                  }}
                   trigger={
                     <button
                       className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-zinc-700/50 transition-all data-[state=open]:opacity-100 data-[state=open]:bg-zinc-700/50"
