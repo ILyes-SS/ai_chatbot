@@ -10,7 +10,7 @@ const gateway = createGoogleGenerativeAI({
 });
 
 export async function POST(req: Request) {
-  const { messages, chatId, model, useThinking, useWebSearch }: { messages: UIMessage[]; chatId: string; model?: string; useThinking?: boolean; useWebSearch?: boolean } = await req.json();
+  const { messages, chatId, model, useThinking, useWebSearch, projectContext }: { messages: UIMessage[]; chatId: string; model?: string; useThinking?: boolean; useWebSearch?: boolean; projectContext?: string } = await req.json();
   
   const normalizedMessages = messages.map(msg => ({
     ...msg,
@@ -37,9 +37,14 @@ export async function POST(req: Request) {
     : undefined;
   const modelToUse = model || "gemini-2.5-flash-lite";
 
+  const systemPrompt = projectContext 
+    ? `You are a helpful AI assistant. The user has provided the following project context for this conversation:\n\n<project_context>\n${projectContext}\n</project_context>\n\nPlease keep this context in mind when answering questions or generating code.`
+    : "You are a helpful AI assistant.";
+
   const result = streamText({
     model: gateway(modelToUse),
     messages: await convertToModelMessages(normalizedMessages),
+    system: systemPrompt,
     tools,
     providerOptions,
     onFinish: async (event) => {

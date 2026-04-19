@@ -190,11 +190,21 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
       
       const validFiles = filesToAttach.filter(Boolean);
 
+      const activeProject = conversation?.projectId 
+        ? projects.find((p: any) => p._id === conversation.projectId) 
+        : null;
+
       sendMessage({
         text: message.text || "",
         files: validFiles
       } as any, {
-        body: { chatId, model, useThinking, useWebSearch }
+        body: { 
+          chatId, 
+          model, 
+          useThinking, 
+          useWebSearch,
+          projectContext: activeProject?.context
+        }
       });
       setInput("");
     }
