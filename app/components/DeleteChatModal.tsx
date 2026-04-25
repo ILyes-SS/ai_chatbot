@@ -32,9 +32,9 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
       <div className="relative w-full max-w-[400px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 ">
           <h2 className="text-[20px] font-semibold text-on-surface tracking-tight">Delete Chat</h2>
-          <p className="text-[14px] text-on-surface-variant mt-2 leading-relaxed">
+          <p className="text-[14px] text-wrap text-on-surface-variant mt-2 leading-relaxed">
             Are you sure you want to delete <span className="text-on-surface font-medium">"{title}"</span>? This action cannot be undone.
           </p>
         </div>

@@ -9,6 +9,8 @@ import { useProjects } from "@/app/stores/projects-store";
 import SearchModal from "./SearchModal";
 import ConversationItem from "./ConversationItem";
 import Logo from "./Logo";
+import LogoutButton from "./LogoutButton";
+import { Button } from "@/components/ui/button";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
@@ -73,7 +75,7 @@ export default function Sidebar() {
           onClick={handleNewChat}
           disabled={isCreating}
           className="flex justify-center items-center gap-2.5 w-full px-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          title="New Thread"
+          title="New Chat"
         >
           <svg
             width="20"
@@ -88,7 +90,7 @@ export default function Sidebar() {
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          {expanded && <span className="ml-1">New Thread</span>}
+          {expanded && <span className="ml-1">New Chat</span>}
         </button>
 
         <button
@@ -219,7 +221,7 @@ export default function Sidebar() {
       </nav>
 
       {/* ── Bottom: user avatar ── */}
-      {session?.user && (
+      {session?.user ? (
         <div className="flex items-center gap-2.5 p-3 pb-4 border-t border-transparent shrink-0 overflow-hidden whitespace-nowrap">
           <div
             className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-surface-container text-on-surface text-sm font-semibold overflow-hidden"
@@ -245,6 +247,39 @@ export default function Sidebar() {
               </span>
             </div>
           )}
+          { expanded &&  <LogoutButton />}
+        </div>
+      ) : (    
+        <div className="flex items-center gap-2.5 p-3 pb-4 border-t border-transparent shrink-0 overflow-hidden whitespace-nowrap">
+          <div
+            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-surface-container text-on-surface text-sm font-semibold overflow-hidden"
+            title="Sign in to create an account"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </div>
+          {expanded && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[13px] font-medium text-on-surface overflow-hidden text-ellipsis">
+                Sign in
+              </span>
+              <span className="text-[11px] text-on-surface-variant overflow-hidden text-ellipsis">
+                Create an account to use all features
+              </span>
+            </div>
+          )}
+          {expanded && <Button onClick={() => router.push('/sign-in')} variant="outline">Sign in</Button>}
         </div>
       )}
 
