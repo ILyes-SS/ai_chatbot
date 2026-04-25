@@ -220,7 +220,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   return (
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
-        <div className="flex-1 overflow-hidden relative border border-border/40 rounded-t-xl shadow-sm bg-background flex flex-col">
+        <div className="flex-1  overflow-hidden relative  bg-background flex flex-col">
           {conversation && <ChatHeader conversation={conversation} />}
           {/* Header for Model Selector */}
           <div className="h-14 border-b border-border/40 flex items-center px-4 bg-muted/10 shrink-0">
@@ -256,8 +256,8 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               </ModelSelectorContent>
             </ModelSelector>
           </div>
-          <Conversation className="flex-1 overflow-y-auto">
-            <ConversationContent className="px-4 py-6 md:px-8">
+          <Conversation className="flex-1 ">
+            <ConversationContent className="px-4 py-6 md:px-8 ">
               {messages.length === 0 ? (
                 <ConversationEmptyState
                   icon={<MessageSquare className="size-12 text-muted-foreground/60" />}
@@ -360,13 +360,13 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 ))
               )}
             </ConversationContent>
-            <ConversationScrollButton />
+            <ConversationScrollButton className="bg-primary text-white" />
           </Conversation>
         </div>
 
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full relative bg-card border border-border/40 border-t-0 shadow-sm rounded-b-xl flex flex-col pt-3"
+          className="w-full relative bg-card  shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-xl  flex flex-col pt-4 px-1"
         >
           {messages.length === 0 && (
             <Suggestions className="px-4 pb-2">
@@ -385,7 +385,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               value={input}
               placeholder="Ask me anything..."
               onChange={(e) => setInput(e.currentTarget.value)}
-              className="resize-none font-medium focus-visible:ring-1 focus-visible:ring-primary/40"
+              className="resize-none font-medium"
             />
           </PromptInputBody>
           <PromptInputFooter className="px-4 pb-4">
@@ -423,13 +423,13 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 onTranscriptionChange={(text) => setInput(prev => prev ? prev + " " + text : text)}
                 variant="ghost"
                 size="icon"
-                className="size-8 rounded-full text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+                className="size-8 rounded-full text-surface transition-colors hover:text-foreground hover:bg-muted"
               />
             </PromptInputTools>
 
             <PromptInputSubmit
               status={status === "streaming" ? "streaming" : "ready"}
-              className="hover:bg-muted font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center rounded-full"
+              className="hover:bg-muted hover:text-foreground font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center rounded-full"
             />
           </PromptInputFooter>
         </PromptInput>

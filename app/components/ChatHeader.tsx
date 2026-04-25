@@ -111,7 +111,7 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
           {shared ? <Check className="size-4 text-green-500" /> : <Share className="size-4" />}
         </Button>
 
-        <ChatActionsMenu
+        <ChatActionsMenu  
           conversation={liveConversation}
           onRename={() => setIsRenaming(true)}
           onDelete={() => {
