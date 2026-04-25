@@ -143,7 +143,7 @@ export default function Sidebar() {
       </div>
 
       {/* ── Middle: navigation lists ── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-surface-container-high [&::-webkit-scrollbar-thumb]:rounded-full">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-primary [&::-webkit-scrollbar-thumb]:rounded-full">
         {/* Pinned / Bookmarks */}
         {pinned.length > 0 && (
           <section className="mb-3 mt-2">

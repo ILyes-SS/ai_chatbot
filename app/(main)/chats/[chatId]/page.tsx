@@ -69,6 +69,7 @@ import { Button } from "@/components/ui/button";
 import { getConversationById } from "@/actions/conversations";
 import { useProjects } from "@/app/stores/projects-store";
 import ChatHeader from "@/app/components/ChatHeader";
+import { useToast } from "@/app/stores/toast";
 
 import { usePromptInputAttachments } from "@/components/ai-elements/prompt-input";
 
@@ -112,7 +113,7 @@ function CopyButton({ text }: { text: string }) {
   const initialSuggestions = [
     "How can you help me today?",
     "Tell me a joke",
-    "Summarize our conversation",
+    "Tell me a fun fact",
     "What are some good productivity tips?",
   ];
 
@@ -125,11 +126,19 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [useThinking, setUseThinking] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
+  const { showToast } = useToast();
 
   const { messages, setMessages, status, sendMessage, regenerate } = useChat({
     api: "/api/chat",
     onFinish: () => {
       router.refresh();
+    },
+    onError: (error) => {
+      if (error.message?.toLowerCase().includes("quota") || error.message?.includes("429")) {
+        showToast("You exceeded your quota. You cannot send requests right now. Please retry in " + Number(error.message.split('Please retry in ')[1].slice(0, -2)).toFixed(1) + " seconds", "error");
+      } else {
+        showToast(error.message || "An error occurred.", "error");
+      }
     }
   });
 
