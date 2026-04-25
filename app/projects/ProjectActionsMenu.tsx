@@ -43,25 +43,25 @@ export default function ProjectActionsMenu({ project }: ProjectActionsMenuProps)
     <div onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-1.5 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">
+          <button className="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
             <MoreVertical className="size-4" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end" 
-          className="w-48 bg-zinc-900 border-zinc-800 text-zinc-300"
+          className="w-48 bg-surface-container-lowest border-transparent text-on-surface-variant"
           onClick={(e) => e.stopPropagation()}
         >
           <DropdownMenuItem 
             onClick={() => setShowEditModal(true)}
-            className="hover:bg-zinc-800 hover:text-white focus:bg-zinc-800 focus:text-white cursor-pointer"
+            className="focus:bg-primary-container hover:text-on-surface focus:text-on-surface cursor-pointer"
           >
             <Pencil className="mr-2 size-4" />
             Edit Project
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setShowDeleteModal(true)}
-            className="text-red-400 hover:bg-red-500/10 hover:text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer"
+            className="text-red-500 hover:bg-red-200 hover:text-red-400 focus:bg-red-200 focus:text-red-400 cursor-pointer"
           >
             <Trash2 className="mr-2 size-4" />
             Delete Project

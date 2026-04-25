@@ -8,6 +8,7 @@ import { useConversations } from "@/app/stores/conversations-store";
 import { useProjects } from "@/app/stores/projects-store";
 import SearchModal from "./SearchModal";
 import ConversationItem from "./ConversationItem";
+import Logo from "./Logo";
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
@@ -61,17 +62,18 @@ export default function Sidebar() {
       onMouseLeave={() => {
         if (!anyDropdownOpen) setExpanded(false);
       }}
-      className={`relative flex flex-col h-screen bg-zinc-950 border-r border-zinc-800 transition-[width,min-width] duration-200 ease-in-out overflow-hidden z-40 ${
+      className={`relative flex flex-col h-screen bg-surface-container-low border-r border-transparent transition-[width,min-width] duration-200 ease-in-out overflow-hidden z-40 ${
         expanded ? "w-[260px] min-w-[260px]" : "w-[64px] min-w-[64px]"
       }`}
     >
       {/* ── Top: New chat button & Projects Link ── */}
-      <div className="p-4 pl-2 pb-2 shrink-0 flex flex-col gap-2">
+      <div className="p-4 pl-2 pb-2 shrink-0 flex flex-col items-center gap-2">
+        <Logo/>
         <button
           onClick={handleNewChat}
           disabled={isCreating}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 text-sm font-medium cursor-pointer transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-          title="New chat"
+          className="flex justify-center items-center gap-2.5 w-full px-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          title="New Thread"
         >
           <svg
             width="20"
@@ -86,13 +88,13 @@ export default function Sidebar() {
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          {expanded && <span>New chat</span>}
+          {expanded && <span className="ml-1">New Thread</span>}
         </button>
 
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 text-sm font-medium cursor-pointer transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap"
-          title="Search (⌘K)"
+          className="flex text-on-primary-container items-center gap-2.5 w-full px-3 py-2.5 rounded-xl bg-transparent  text-sm font-medium cursor-pointer transition-colors hover:bg-surface-container hover:text-on-surface whitespace-nowrap"
+          title="Search "
         >
           <svg
             width="20"
@@ -109,16 +111,11 @@ export default function Sidebar() {
             <path d="m21 21-4.3-4.3" />
           </svg>
           {expanded && <span className="flex-1 text-left">Search</span>}
-          {expanded && (
-            <span className="text-[10px] font-bold text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded-md leading-none border border-zinc-700">
-              ⌘K
-            </span>
-          )}
         </button>
 
         <Link
           href="/projects"
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg bg-transparent text-zinc-400 no-underline text-sm font-medium transition-colors hover:bg-zinc-800/50 hover:text-zinc-100 whitespace-nowrap overflow-hidden"
+          className="flex text-on-primary-container items-center gap-2.5 w-full px-3 py-2.5 rounded-xl bg-transparent  no-underline text-sm font-medium transition-colors hover:bg-surface-container/50 hover:text-on-surface whitespace-nowrap overflow-hidden"
           title="Projects"
         >
           <svg
@@ -144,11 +141,11 @@ export default function Sidebar() {
       </div>
 
       {/* ── Middle: navigation lists ── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-surface-container-high [&::-webkit-scrollbar-thumb]:rounded-full">
         {/* Pinned / Bookmarks */}
         {pinned.length > 0 && (
           <section className="mb-3 mt-2">
-            <h3 className="flex items-center gap-2 px-3 pl-1 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 whitespace-nowrap">
+            <h3 className="flex text-on-primary-container items-center gap-2 px-3 pl-1 py-1.5 text-[12px] font-semibold uppercase tracking-wider  whitespace-nowrap">
               {expanded && <svg
                 width="14"
                 height="14"
@@ -175,8 +172,8 @@ export default function Sidebar() {
         {/* Recent Conversations */}
         {recent.length > 0 && (
           <section className="mb-3 mt-2">
-            <h3 className="flex items-center gap-2 px-3 pl-1 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 whitespace-nowrap">
-              { expanded && <svg
+            <h3 className="flex  text-on-primary-container items-center gap-2 px-3 pl-1 py-1.5 text-[12px] font-semibold uppercase tracking-wider  whitespace-nowrap">
+              {expanded && <svg
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
@@ -201,7 +198,7 @@ export default function Sidebar() {
         )}
 
         {conversations.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-6 px-3 text-zinc-600">
+          <div className="flex flex-col items-center gap-2 py-6 px-3 text-on-surface-variant/80">
             <svg
               width="20"
               height="20"
@@ -215,7 +212,7 @@ export default function Sidebar() {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             {expanded && (
-              <span className="text-xs text-zinc-500">No chats yet</span>
+              <span className="text-xs text-on-surface-variant">No chats yet</span>
             )}
           </div>
         )}
@@ -223,9 +220,9 @@ export default function Sidebar() {
 
       {/* ── Bottom: user avatar ── */}
       {session?.user && (
-        <div className="flex items-center gap-2.5 p-3 pb-4 border-t border-zinc-800 shrink-0 overflow-hidden whitespace-nowrap">
+        <div className="flex items-center gap-2.5 p-3 pb-4 border-t border-transparent shrink-0 overflow-hidden whitespace-nowrap">
           <div
-            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-zinc-800 text-zinc-200 text-sm font-semibold overflow-hidden"
+            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-surface-container text-on-surface text-sm font-semibold overflow-hidden"
             title={session.user.name ?? session.user.email}
           >
             {session.user.image ? (
@@ -240,10 +237,10 @@ export default function Sidebar() {
           </div>
           {expanded && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[13px] font-medium text-zinc-200 overflow-hidden text-ellipsis">
+              <span className="text-[13px] font-medium text-on-surface overflow-hidden text-ellipsis">
                 {session.user.name ?? "User"}
               </span>
-              <span className="text-[11px] text-zinc-500 overflow-hidden text-ellipsis">
+              <span className="text-[11px] text-on-surface-variant overflow-hidden text-ellipsis">
                 {session.user.email}
               </span>
             </div>

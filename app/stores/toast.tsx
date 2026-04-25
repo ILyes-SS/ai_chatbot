@@ -74,7 +74,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   ? "bg-red-950/90 border-red-800/50 text-red-200"
                   : toast.type === "success"
                     ? "bg-emerald-950/90 border-emerald-800/50 text-emerald-200"
-                    : "bg-zinc-900/90 border-zinc-700/50 text-zinc-200"
+                    : "bg-surface-container-lowest/90 border-transparent/50 text-on-surface"
               }`}
             >
               {/* Icon */}

@@ -51,10 +51,10 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-        <p className="mt-2 text-sm text-zinc-400">Sign in to your account</p>
+    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+      <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
+        <h1 className="text-2xl font-bold text-on-surface">Welcome back</h1>
+        <p className="mt-2 text-sm text-on-surface-variant">Sign in to your account</p>
 
         {error && (
           <div className="mt-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
@@ -65,7 +65,7 @@ export default function SignInPage() {
         <div className="mt-6">
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 transition disabled:opacity-50 cursor-pointer"
+            className="w-full flex items-center  justify-center gap-2 rounded-lg  border-primary border px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-high transition disabled:opacity-50 cursor-pointer"
             onClick={handleGitHub}
             disabled={socialLoading || loading}
             id="github-signin"
@@ -82,22 +82,22 @@ export default function SignInPage() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-800" />
+            <div className="w-full border-t border-transparent" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-zinc-900 px-3 text-zinc-500">or</span>
+            <span className="bg-surface-container-lowest px-3 text-on-surface-variant">or</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="email" className="block text-sm font-medium text-on-surface-variant">
               Email
             </label>
             <input
               id="email"
               type="email"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full rounded-lg border border-transparent bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="you@example.com"
               autoComplete="email"
               {...register("email")}
@@ -108,13 +108,13 @@ export default function SignInPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="password" className="block text-sm font-medium text-on-surface-variant">
               Password
             </label>
             <input
               id="password"
               type="password"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full rounded-lg border border-transparent bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="••••••••"
               autoComplete="current-password"
               {...register("password")}
@@ -125,14 +125,14 @@ export default function SignInPage() {
           </div>
 
           <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-sm font-medium text-white hover:underline">
+            <Link href="/forgot-password" className="text-sm font-medium text-on-surface hover:underline">
               Forgot password?
             </Link>
           </div>
 
           <button
             type="submit"
-            className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 transition disabled:opacity-50 cursor-pointer"
+            className="mt-2 w-full flex items-center border-primary border justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-surface-container-high transition disabled:opacity-50 cursor-pointer"
             disabled={loading || socialLoading}
             id="signin-submit"
           >
@@ -143,9 +143,9 @@ export default function SignInPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-zinc-400">
+        <p className="mt-6 text-center text-sm text-on-surface-variant">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="font-medium text-white hover:underline">
+          <Link href="/sign-up" className="font-medium text-on-surface hover:underline">
             Sign up
           </Link>
         </p>

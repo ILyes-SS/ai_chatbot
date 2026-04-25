@@ -94,7 +94,7 @@ export default function ChatActionsMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setShowDeleteModal(true)}
-            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+            className=" text-red-600 focus:text-red-500 focus:bg-red-200"
           >
             <Trash2 className="mr-2 size-4" />
             Delete

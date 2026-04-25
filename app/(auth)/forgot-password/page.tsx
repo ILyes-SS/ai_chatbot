@@ -41,15 +41,15 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
-        <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-8 shadow-xl">
-          <h1 className="text-2xl font-bold text-white">Check your email</h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            If an account exists for <strong className="text-white">{getValues("email")}</strong>, we&apos;ve sent a
+      <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+        <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
+          <h1 className="text-2xl font-bold text-on-surface">Check your email</h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            If an account exists for <strong className="text-on-surface">{getValues("email")}</strong>, we&apos;ve sent a
             password reset link. Please check your inbox.
           </p>
-          <p className="mt-6 text-center text-sm text-zinc-400">
-            <Link href="/sign-in" className="font-medium text-white hover:underline">
+          <p className="mt-6 text-center text-sm text-on-surface-variant">
+            <Link href="/sign-in" className="font-medium text-on-surface hover:underline">
               Back to sign in
             </Link>
           </p>
@@ -59,10 +59,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-800 p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-white">Forgot password</h1>
-        <p className="mt-2 text-sm text-zinc-400">
+    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+      <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
+        <h1 className="text-2xl font-bold text-on-surface">Forgot password</h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
           Enter your email and we&apos;ll send you a reset link
         </p>
 
@@ -74,13 +74,13 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="email" className="block text-sm font-medium text-on-surface-variant">
               Email
             </label>
             <input
               id="email"
               type="email"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full rounded-lg border border-transparent bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="you@example.com"
               autoComplete="email"
               {...register("email")}
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 transition disabled:opacity-50 cursor-pointer"
+            className="mt-2 w-full flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-surface-container-high border border-primary transition disabled:opacity-50 cursor-pointer"
             disabled={loading}
             id="forgot-submit"
           >
@@ -103,9 +103,9 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-zinc-400">
+        <p className="mt-6 text-center text-sm text-on-surface-variant">
           Remember your password?{" "}
-          <Link href="/sign-in" className="font-medium text-white hover:underline">
+          <Link href="/sign-in" className="font-medium text-on-surface hover:underline">
             Sign in
           </Link>
         </p>
