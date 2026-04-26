@@ -74,7 +74,7 @@ export default function ProjectList({ initialProjects: _unused }: ProjectListPro
                 </div>
               </Link>
 
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <div className="absolute top-4 right-4 z-10">
                 <ProjectActionsMenu project={project} />
               </div>
             </div>

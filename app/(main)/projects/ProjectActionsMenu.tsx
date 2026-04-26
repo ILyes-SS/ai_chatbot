@@ -43,7 +43,7 @@ export default function ProjectActionsMenu({ project }: ProjectActionsMenuProps)
     <div onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
+          <button className="p-1.5 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100">
             <MoreVertical className="size-4" />
           </button>
         </DropdownMenuTrigger>

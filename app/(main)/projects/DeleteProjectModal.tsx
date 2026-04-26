@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DeleteProjectModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface DeleteProjectModalProps {
 }
 
 export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, isPending }: DeleteProjectModalProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,9 +25,9 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
@@ -69,6 +72,7 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

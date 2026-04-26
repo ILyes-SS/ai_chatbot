@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useConversations } from "@/app/stores/conversations-store";
 
 interface Project {
@@ -17,7 +18,10 @@ interface MoveChatModalProps {
 
 export default function MoveChatModal({ isOpen, onClose, conversation, projects }: MoveChatModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
   const { optimisticUpdateConversation } = useConversations();
+
+  useEffect(() => setMounted(true), []);
 
   // Close on Escape
   useEffect(() => {
@@ -30,7 +34,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const filteredProjects = projects.filter(p => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -42,18 +46,18 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative w-full max-w-[480px] bg-zinc-50 border border-transparent/50 rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-start justify-between p-6 pb-4">
+        <div className="flex items-start justify-between p-4 pb-2 sm:p-6 sm:pb-4">
           <div>
             <h2 className="text-[20px] font-semibold text-zinc-900 tracking-tight">Move chat</h2>
-            <p className="text-[14px] text-on-surface-variant mt-1">Select a project to move this chat into.</p>
+            <p className="text-[14px] text-wrap text-on-surface-variant mt-1">Select a project to move this chat into.</p>
           </div>
           <button 
             onClick={onClose}
@@ -67,7 +71,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
         </div>
 
         {/* Search Input */}
-        <div className="px-6 pb-2">
+        <div className="px-4 pb-4 sm:px-6 sm:pb-2">
           <div className="relative group">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-on-surface-variant group-focus-within:text-on-surface-variant transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -75,8 +79,8 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
             </svg>
             <input
               autoFocus
-              className="w-full h-11 pl-10 pr-4 bg-primary-container border border-transparent rounded-t-xl rounded-b-none focus:outline-none focus:border-transparent text-[14px] text-on-surface placeholder:text-on-surface-variant transition-colors"
-              placeholder="Search or create a project"
+              className="w-full min-w-0 h-11 pl-10 pr-4 bg-primary-container border border-transparent rounded-t-xl rounded-b-none focus:outline-none focus:border-transparent text-[14px] text-on-surface placeholder:text-on-surface-variant transition-colors"
+              placeholder="Search project..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -128,6 +132,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

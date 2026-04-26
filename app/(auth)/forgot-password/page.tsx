@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-        <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
+        <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-5 sm:p-8 shadow-xl">
           <h1 className="text-2xl font-bold text-on-surface">Check your email</h1>
           <p className="mt-2 text-sm text-on-surface-variant">
             If an account exists for <strong className="text-on-surface">{getValues("email")}</strong>, we&apos;ve sent a
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+    <div className="max-h-screen flex items-center justify-center bg-surface p-4">
       <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
         <h1 className="text-2xl font-bold text-on-surface">Forgot password</h1>
         <p className="mt-2 text-sm text-on-surface-variant">
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
             <input
               id="email"
               type="email"
-              className="w-full rounded-lg border border-transparent bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full min-w-0 rounded-lg border border-transparent bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-white/20"
               placeholder="you@example.com"
               autoComplete="email"
               {...register("email")}

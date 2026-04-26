@@ -42,13 +42,9 @@ export default function CreateProjectButton() {
        
       <button 
         onClick={handleOpen}
-        className="flex cursor-pointer items-center gap-2 bg-surface-container text-on-surface px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-container-high transition border border-transparent"
+        className=" cursor-pointer  bg-surface-container text-on-surface px-3 max-sm:px-1 py-2 rounded-lg text-sm font-medium hover:bg-surface-container-high transition border border-transparent"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
-        New project
+        + New project
       </button>
       
 

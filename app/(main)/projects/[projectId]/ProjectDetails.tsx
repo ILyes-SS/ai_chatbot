@@ -69,22 +69,23 @@ export default function ProjectDetails({ project: initialProject, conversations 
       </Link>
 
       {/* Project Header */}
-      <div className="flex items-start justify-between">
-        <div className="group relative">
-          <h1 className="text-4xl font-semibold text-on-surface tracking-tight mb-3 font-serif">
-            {project.title}
-          </h1>
+      <div className="flex items-start justify-between w-full">
+        <div className="group relative w-full">
+          <div className="flex justify-between items-start md:block w-full">
+            <h1 className="text-4xl font-semibold text-on-surface tracking-tight mb-3 font-serif pr-4 md:pr-0">
+              {project.title}
+            </h1>
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="md:absolute md:-right-10 md:top-2 opacity-100 md:opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all shrink-0 mt-2 md:mt-0"
+              aria-label="Edit project"
+            >
+              <Edit2 className="w-5 h-5" />
+            </button>
+          </div>
           <p className="text-base text-on-surface-variant max-w-2xl">
             {project.context || "No description provided."}
           </p>
-          
-          <button 
-            onClick={() => setIsEditModalOpen(true)}
-            className="absolute -right-10 top-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all"
-            aria-label="Edit project"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
         </div>
       </div>
 

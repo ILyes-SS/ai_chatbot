@@ -6,6 +6,7 @@ import { getProjects } from "@/actions/projects";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "../stores/providers";
+import SidebarLayout from "../components/SidebarLayout";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -30,10 +31,9 @@ export default async function RootLayout({
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className="antialiased">
         <Providers initialConversations={conversations as any} initialProjects={projects as any}>
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">{children}</main>
-          </div>
+          <SidebarLayout sidebar={<Sidebar />}>
+            {children}
+          </SidebarLayout>
         </Providers>
       </body>
     </html>

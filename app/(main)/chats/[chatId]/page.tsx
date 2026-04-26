@@ -232,14 +232,14 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
         <div className="flex-1  overflow-hidden relative  bg-background flex flex-col">
           {conversation && <ChatHeader conversation={conversation} />}
           {/* Header for Model Selector */}
-          <div className="h-14 border-b border-border/40 flex items-center px-4 bg-muted/10 shrink-0">
+          <div className="py-2 md:h-14 border-b border-border/40 flex items-center px-2 md:px-4 bg-muted/10 shrink-0">
             <ModelSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
               <ModelSelectorTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 px-3 text-muted-foreground hover:text-foreground rounded-lg text-sm font-medium border border-border/50 bg-background/50 hover:bg-muted shadow-sm">
-                  <span className="truncate max-w-[150px]">
+                <Button variant="ghost" size="sm" className="h-8 md:h-9 px-2 md:px-3 text-muted-foreground hover:text-foreground rounded-lg text-xs md:text-sm font-medium border border-border/50 bg-background/50 hover:bg-muted shadow-sm">
+                  <span className="truncate max-w-[100px] md:max-w-[150px]">
                     {availableModels.find((m) => m.id === model)?.name || "Select Model"}
                   </span>
-                  <ChevronDown className="ml-2 size-4 opacity-50 shrink-0" />
+                  <ChevronDown className="ml-1 md:ml-2 size-3 md:size-4 opacity-50 shrink-0" />
                 </Button>
               </ModelSelectorTrigger>
               <ModelSelectorContent>
@@ -375,7 +375,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full relative bg-card  shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-xl  flex flex-col pt-4 px-1"
+          className="w-full relative bg-card  shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-xl  flex flex-col pt-4 max-sm:pt-2 px-1"
         >
           {messages.length === 0 && (
             <Suggestions className="px-4 pb-2">
@@ -397,7 +397,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               className="resize-none font-medium"
             />
           </PromptInputBody>
-          <PromptInputFooter className="px-4 pb-4">
+          <PromptInputFooter className="px-4 pb-4 max-sm:pb-2">
             <PromptInputTools>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

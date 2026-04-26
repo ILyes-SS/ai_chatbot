@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useConversations } from "@/app/stores/conversations-store";
 import { useProjects } from "@/app/stores/projects-store";
@@ -19,9 +20,12 @@ interface SearchModalProps {
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { conversations } = useConversations();
   const { projects } = useProjects();
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,7 +37,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const items: SearchItem[] = [
     ...(conversations || []).map((c) => ({
@@ -63,22 +67,22 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-[10svh] px-4">
+  return createPortal(
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center max-sm:items-start justify-center pt-[10svh] max-sm:pt-[1svh]  px-4">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl bg-surface-container-lowest rounded-[1rem] shadow-[0_20px_40px_rgba(7,31,32,0.06)] p-6 flex flex-col animate-in fade-in zoom-in-95 duration-200 ">
+      <div className="relative w-full max-w-2xl bg-surface-container-lowest rounded-[1rem] shadow-[0_20px_40px_rgba(7,31,32,0.06)] p-4 sm:p-6 flex flex-col animate-in fade-in zoom-in-95 duration-200 ">
         
         {/* Search Input */}
-        <div className="flex items-center px-4 bg-primary-container/60 rounded-xl mb-6">
+        <div className="flex items-center px-4 bg-primary-container/60 rounded-xl mb-4 sm:mb-6">
           <svg className="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
           <input
             autoFocus
-            className="flex-1 bg-transparent h-14 pl-3 pr-4 outline-none text-on-surface placeholder:text-on-surface-variant/60 text-base"
+            className="flex-1 min-w-0 bg-transparent h-14 pl-3 pr-4 outline-none text-on-surface placeholder:text-on-surface-variant/60 text-base"
             placeholder="Search chats and projects..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -149,6 +153,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
         
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

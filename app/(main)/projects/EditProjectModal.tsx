@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useProjects } from "@/app/stores/projects-store";
 
 interface EditProjectModalProps {
@@ -14,9 +15,12 @@ interface EditProjectModalProps {
 }
 
 export default function EditProjectModal({ isOpen, onClose, project }: EditProjectModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [title, setTitle] = useState(project.title);
   const [context, setContext] = useState(project.context || "");
   const { optimisticUpdateProject } = useProjects();
+
+  useEffect(() => setMounted(true), []);
 
   // Reset values when modal opens or project changes
   useEffect(() => {
@@ -35,9 +39,9 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
@@ -107,6 +111,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

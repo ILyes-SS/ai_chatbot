@@ -66,7 +66,7 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
   return (
     <li className="relative group block">
       {isRenaming ? (
-        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface-container/50">
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface-container/50 overflow-hidden w-full min-w-0">
           <input
             ref={inputRef}
             type="text"
@@ -74,7 +74,7 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
             onChange={(e) => setRenameValue(e.target.value)}
             onBlur={handleRenameSubmit}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-none outline-none text-[13px] text-on-surface placeholder:text-on-surface-variant"
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-[13px] text-on-surface placeholder:text-on-surface-variant"
           />
         </div>
       ) : (
@@ -111,7 +111,7 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
                   }}
                   trigger={
                     <button
-                      className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-surface-container-high/50 transition-all data-[state=open]:opacity-100 data-[state=open]:bg-surface-container-high/50"
+                      className="p-1 rounded opacity-100 md:opacity-0 group-hover:opacity-100 hover:bg-surface-container-high/50 transition-all data-[state=open]:opacity-100 data-[state=open]:bg-surface-container-high/50"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant">
                         <circle cx="12" cy="12" r="1"></circle>

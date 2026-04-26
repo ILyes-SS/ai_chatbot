@@ -13,7 +13,18 @@ import LogoutButton from "./LogoutButton";
 import { Button } from "@/components/ui/button";
 
 export default function Sidebar() {
-  const [expanded, setExpanded] = useState(false);
+  const [hoverExpanded, setExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const expanded = hoverExpanded || isMobile;
+
   const [isCreating, setIsCreating] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [anyDropdownOpen, setAnyDropdownOpen] = useState(false);

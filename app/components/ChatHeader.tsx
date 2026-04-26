@@ -77,7 +77,7 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-background/50 sticky top-0 z-10">
+    <div className="flex items-center justify-between px-4 pl-12 md:pl-4 py-3 border-b border-border/40 bg-background/50 sticky top-0 z-10">
       <div className="w-fit min-w-0 max-w-md">
         {isRenaming ? (
           <input
@@ -87,7 +87,7 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
             onChange={(e) => setRenameValue(e.target.value)}
             onBlur={handleRenameSubmit}
             onKeyDown={handleKeyDown}
-            className=" bg-transparent border-none outline-none text-lg font-semibold text-foreground focus:ring-0 p-0"
+            className=" bg-transparent w-full min-w-0 border-none outline-none text-lg font-semibold text-foreground focus:ring-0 p-0"
           />
         ) : (
           <h1 

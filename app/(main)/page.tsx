@@ -67,19 +67,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <div className="w-[60%] flex flex-col gap-1  p-8 ">
+    <div className="min-h-screen flex items-center justify-center bg-surface p-4 pt-16 md:pt-4">
+      <div className="w-full sm:w-[80%] md:w-[60%] flex flex-col gap-1  p-4 sm:p-8 ">
         <div className="flex items-center justify-start gap-2">
           <Logo size={60}/>
           <h1 className="text-2xl font-bold text-on-surface">SailorAI</h1>
         </div>
         <div className="flex items-center gap-2 ">
-          <p className="text-xl  text-on-surface-variant">
-           Good Morning, <span className="text-2xl font-bold text-on-surface-variant">{session.user.name.split('@')[0]}</span>
+          <p className="text-xl max-sm:text-lg  text-on-surface-variant">
+           Good Morning, <span className="text-2xl  max-sm:text-xl font-bold text-on-surface-variant">{session.user.name.split('@')[0]}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 mt-2 mb-3">
-          <p className="text-xl  text-on-surface-variant">
+          <p className="text-lg   max-sm:text-[16px]  text-on-surface-variant">
             Start by Creating a New Chat
           </p>
         </div>

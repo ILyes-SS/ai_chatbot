@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DeleteChatModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface DeleteChatModalProps {
 }
 
 export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isPending }: DeleteChatModalProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,10 +25,10 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -66,6 +69,7 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

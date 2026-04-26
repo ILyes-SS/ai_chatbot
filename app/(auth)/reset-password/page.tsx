@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+      <div className="max-h-screen flex items-center justify-center bg-surface p-4">
         <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-transparent p-8 shadow-xl">
           <h1 className="text-2xl font-bold text-on-surface">Invalid link</h1>
           <p className="mt-2 text-sm text-on-surface-variant">
