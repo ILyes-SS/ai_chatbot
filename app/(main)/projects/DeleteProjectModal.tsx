@@ -29,7 +29,7 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
 
   return createPortal(
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Click outside to close */}

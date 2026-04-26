@@ -50,7 +50,7 @@ export default function CreateProjectButton() {
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="absolute inset-0" onClick={handleClose} />
 
           <div className="relative w-full max-w-[480px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">

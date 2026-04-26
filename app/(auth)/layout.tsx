@@ -7,7 +7,7 @@ import "../globals.css";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "AI Chatbot",
+  title: "SailorAI",
   description: "A high-fidelity AI chatbot powered by Gemini",
 };
 

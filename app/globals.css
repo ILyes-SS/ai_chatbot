@@ -9,6 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-lato: var(--font-lato);
   
   /* The Lucid Flow - Core Colors */
   --color-surface: var(--surface);
@@ -96,7 +97,7 @@
 
   }
   html {
-    @apply font-sans;
+    @apply font-lato;
 
   }
   ::selection {

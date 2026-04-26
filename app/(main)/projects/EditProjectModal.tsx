@@ -43,7 +43,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
 
   return createPortal(
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex max-sm:items-start items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="absolute inset-0" onClick={(e) => { e.stopPropagation(); onClose(); }} />
