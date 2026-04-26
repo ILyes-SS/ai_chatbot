@@ -6,12 +6,7 @@ import { useRouter } from "next/navigation";
 import { useConversations } from "@/app/stores/conversations-store";
 import ChatActionsMenu from "./ChatActionsMenu";
 
-interface Conversation {
-  _id: string;
-  title: string;
-  pinned: boolean;
-  projectId?: string | null;
-}
+import type { Conversation } from "@/types";
 
 interface ConversationItemProps {
   conversation: Conversation;

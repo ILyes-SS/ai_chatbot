@@ -2,17 +2,12 @@ import React from "react";
 import { getProjects } from "@/actions/projects";
 import CreateProjectButton from "./CreateProjectButton";
 import ProjectList from "./ProjectList";
-
-interface Project {
-  _id: string;
-  title: string;
-  context?: string;
-  updatedAt: string | Date;
-}
+import type { Project } from "@/types";
 
 export default async function ProjectsPage() {
   const result = await getProjects();
-  const projects = (result.success && result.data ? result.data : []) as Project[];
+  const projects: Project[] = result.success && result.data ? result.data : [];
+
 
   return (
     <div className="min-h-screen bg-surface p-8 pt-16 md:pt-8 md:p-12 lg:px-24 w-full">

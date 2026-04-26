@@ -10,16 +10,19 @@ import {
   type CreateProjectData,
   type UpdateProjectData,
 } from "@/lib/schemas/project";
+import type { Project } from "@/types";
 
 const COLLECTION = "project";
 
 /**
  * Converts a MongoDB document to a plain object with _id serialised to string.
  */
-function serialize(doc: WithId<Document>) {
+function serialize(doc: WithId<Document>): Project {
   return {
-    ...doc,
     _id: doc._id.toString(),
+    title: doc.title ?? "Untitled",
+    context: doc.context ?? "",
+    media: doc.media ?? [],
     updatedAt: doc.updatedAt?.toISOString() || null,
     createdAt: doc.createdAt?.toISOString() || null,
   };

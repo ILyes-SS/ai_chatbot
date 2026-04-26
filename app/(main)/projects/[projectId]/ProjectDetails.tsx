@@ -5,25 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, Edit2 } from "lucide-react";
 import { useProjects } from "@/app/stores/projects-store";
 import EditProjectModal from "../EditProjectModal";
+import type { Project, Conversation } from "@/types";
 
-export interface Project {
-  _id: string;
-  title: string;
-  context?: string;
-  userId?: string;
-  media?: string[];
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
-export interface Conversation {
-  _id: string;
-  title: string;
-  projectId?: string | null;
-  userId?: string;
-  createdAt?: string | null;
-  updatedAt: string | null;
-}
+// Re-export for page.tsx
+export type { Project, Conversation };
 
 interface ProjectDetailsProps {
   project: Project;

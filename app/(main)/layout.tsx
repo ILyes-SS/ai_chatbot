@@ -30,7 +30,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={cn("font-lato", lato.variable)}>
       <body className="antialiased">
-        <Providers initialConversations={conversations as any} initialProjects={projects as any}>
+        <Providers initialConversations={conversations} initialProjects={projects}>
           <SidebarLayout sidebar={<Sidebar />}>
             {children}
           </SidebarLayout>

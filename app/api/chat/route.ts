@@ -1,6 +1,7 @@
-import { streamText, generateText, type UIMessage, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
+import { streamText, generateText, type UIMessage, type UIMessagePart, convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { updateConversation, getConversationById } from "@/actions/conversations";
 import { createGoogleGenerativeAI, google } from "@ai-sdk/google";
+import type { SourceItem } from "@/types";
 
 export const maxDuration = 30;
 
@@ -53,17 +54,17 @@ export async function POST(req: Request) {
       console.dir(event, {depth: null});
 
       try {
-        const responseMetadata = (event as any).response;
-        const metadata = responseMetadata?.providerMetadata?.google || responseMetadata?.metadata?.google;
-        const groundingMetadata = metadata?.groundingMetadata;
+        const providerMeta = event.providerMetadata as Record<string, Record<string, unknown>> | undefined;
+        const googleMeta = providerMeta?.google;
+        const groundingMetadata = googleMeta?.groundingMetadata;
         
-        const modelMessage = { 
+        const modelMessage: UIMessage = { 
           id: event.response.id,
           role: "assistant", 
-          parts: event.response.messages.flatMap(m => m.content as any[]),
+          parts: event.response.messages.flatMap(m => m.content as UIMessage["parts"]),
           metadata: {
             groundingMetadata,
-            sources: (event as any).sources || (event as any).response?.sources
+            sources: (event.sources ?? []) as SourceItem[]
           }
         };
 
@@ -71,28 +72,27 @@ export async function POST(req: Request) {
         // console.dir(modelMessage, {depth: null});
 
         const existingConv = await getConversationById(chatId);
-        let mergedMessages = [lastUserMessage, modelMessage as any];
+        let mergedMessages: UIMessage[] = [lastUserMessage, modelMessage];
         let newTitle: string | undefined = undefined;
 
         if (existingConv.success && existingConv.data) {
-          const existingMessages = existingConv.data.messages || [];
-          const userMsgIndex = existingMessages.findIndex((m: any) => m.id === lastUserMessage.id);
+          const existingMessages = (existingConv.data.messages ?? []) as UIMessage[];
+          const userMsgIndex = existingMessages.findIndex((m) => m.id === lastUserMessage.id);
           
           if (userMsgIndex !== -1) {
             // Regeneration/Edit: Truncate existing and append new
             const msgs = [...existingMessages];
-            msgs.splice(userMsgIndex, msgs.length - userMsgIndex, lastUserMessage, modelMessage as any);
+            msgs.splice(userMsgIndex, msgs.length - userMsgIndex, lastUserMessage, modelMessage);
             mergedMessages = msgs;
           } else {
             // Normal message: Append
-            mergedMessages = [...existingMessages, lastUserMessage, modelMessage as any];
+            mergedMessages = [...existingMessages, lastUserMessage, modelMessage];
             
-            if (existingMessages.length === 0 && (existingConv.data as any).title === "New Chat") {
+            if (existingMessages.length === 0 && existingConv.data.title === "New Chat") {
               try {
-                // @ts-ignore
-                let textContent = lastUserMessage.content || lastUserMessage.text || "";
-                if (!textContent && lastUserMessage.parts) {
-                  textContent = lastUserMessage.parts.filter((p: any) => p.type === 'text').map((p: any) => p.text).join(" ");
+                let textContent = "";
+                if (lastUserMessage.parts) {
+                  textContent = lastUserMessage.parts.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map((p) => p.text).join(" ");
                 }
                 console.log("Generating title for prompt: ", textContent);
                 if (textContent) {
@@ -127,11 +127,15 @@ export async function POST(req: Request) {
         
         const sources = await result.sources;
         if (sources && sources.length > 0) {
-          writer.write({
-            type: 'data-sources',
-            id: `sources-${Date.now()}`,
-            data: sources,
-          } as any);
+          // Sources are written as custom data parts for the UI
+          for (const source of sources) {
+            writer.write({
+              type: 'source-url',
+              sourceId: `source-${Date.now()}`,
+              url: (source as SourceItem).url || '',
+              title: (source as SourceItem).title,
+            });
+          }
         }
       },
     }),

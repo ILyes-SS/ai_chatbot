@@ -12,12 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EditProjectModal from "./EditProjectModal";
 import DeleteProjectModal from "./DeleteProjectModal";
-
-interface Project {
-  _id: string;
-  title: string;
-  context?: string;
-}
+import type { Project } from "@/types";
 
 interface ProjectActionsMenuProps {
   project: Project;

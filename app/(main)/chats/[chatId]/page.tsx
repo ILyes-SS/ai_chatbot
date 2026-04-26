@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage, type FileUIPart } from "ai";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon, RefreshCcw, Copy, Check } from "lucide-react";
 import {
@@ -70,6 +71,7 @@ import { getConversationById } from "@/actions/conversations";
 import { useProjects } from "@/app/stores/projects-store";
 import ChatHeader from "@/app/components/ChatHeader";
 import { useToast } from "@/app/stores/toast";
+import type { Conversation as ConversationType, SourceItem } from "@/types";
 
 import { usePromptInputAttachments } from "@/components/ai-elements/prompt-input";
 
@@ -129,7 +131,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   const { showToast } = useToast();
 
   const { messages, setMessages, status, sendMessage, regenerate } = useChat({
-    api: "/api/chat",
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
     onFinish: () => {
       router.refresh();
     },
@@ -144,7 +146,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
-  const [conversation, setConversation] = useState<any>(null);
+  const [conversation, setConversation] = useState<ConversationType | null>(null);
   const { projects } = useProjects();
 
   useEffect(() => {
@@ -160,7 +162,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
           setConversation(chatRes.data);
           if (chatRes.data.messages) {
             // Type casting since we trust the database schema matches the expected format
-            setMessages(chatRes.data.messages as any);
+            setMessages(chatRes.data.messages as UIMessage[]);
           }
         }
       } catch (e) {
@@ -189,9 +191,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
           } 
           
           return {
-            type: "file",
-            mediaType: (f as any).contentType || f.mediaType || "application/octet-stream",
-            filename: (f as any).name || f.filename || "attachment",
+            type: "file" as const,
+            mediaType: f.mediaType || "application/octet-stream",
+            filename: f.filename || "attachment",
             url: url,
           };
         })
@@ -200,13 +202,13 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
       const validFiles = filesToAttach.filter(Boolean);
 
       const activeProject = conversation?.projectId 
-        ? projects.find((p: any) => p._id === conversation.projectId) 
+        ? projects.find((p) => p._id === conversation.projectId) 
         : null;
 
       sendMessage({
         text: message.text || "",
-        files: validFiles
-      } as any, {
+        files: validFiles as FileUIPart[],
+      }, {
         body: { 
           chatId, 
           model, 
@@ -278,24 +280,23 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                   <Message from={message.role} key={message.id}>
                     {message.role === "assistant" && (
                       (() => {
-                        const sources = [
-                          ...(message.metadata?.sources as any[] || []),
-                          ...(message.parts?.filter(p => 
+                        const metadata = message.metadata as Record<string, unknown> | undefined;
+                        const metadataSources = (Array.isArray(metadata?.sources) ? metadata.sources : []) as SourceItem[];
+                        const partSources = (message.parts?.filter(p => 
                             p.type === "source-url" || 
-                            p.type === "source-document" || 
-                            p.type === "data-sources"
-                          ).flatMap(p => p.type === "data-sources" ? ((p as any).data || []) : [p]) as any[] || [])
-                        ];
+                            p.type === "source-document"
+                          ) ?? []) as SourceItem[];
+                        const sources: SourceItem[] = [...metadataSources, ...partSources];
                         if (sources.length === 0) return null;
                         return (
                           <Sources className="mt-2 px-4">
                             <SourcesTrigger count={sources.length} />
                             <SourcesContent>
-                              {sources.map((source: any, idx: number) => (
+                              {sources.map((source, idx) => (
                                 <Source 
                                   key={idx} 
-                                  href={source.url || source.uri} 
-                                  title={source.title || source.url || source.uri} 
+                                  href={source.url || source.uri || ""} 
+                                  title={source.title || source.url || source.uri || "Source"} 
                                 />
                               ))}
                             </SourcesContent>
@@ -313,12 +314,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                             </MessageResponse>
                           );
                         }
-                        // @ts-ignore - Some older definitions of UIMessage.part might not include 'file'
                         if (part.type === "file") {
-                          // @ts-ignore - Handle possible legacy image parts vs standard v5 files
                           const isImage = part.mediaType?.startsWith('image/');
-                          // @ts-ignore
-                          const url = part.url || part.image;
+                          const url = part.url;
                           
                           if (isImage) {
                             return (
@@ -330,7 +328,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                             return (
                               <div key={key} className="mb-2 max-w-[240px] flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-muted/50 text-xs text-muted-foreground">
                                 <PaperclipIcon className="size-4 shrink-0" />
-                                {/* @ts-ignore */}
                                 <span className="truncate">{part.filename || "Attachment"}</span>
                               </div>
                             );
@@ -338,9 +335,10 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                         }
                         return null;
                       }) || (
-                        // Fallback just in case `parts` is not available, try using text directly (for legacy storage compatibility)
-                        // @ts-ignore
-                        <MessageResponse key={`${message.id}-fallback`}>{message.content || message.text}</MessageResponse>
+                        // Fallback: extract text content from parts
+                        <MessageResponse key={`${message.id}-fallback`}>
+                          {message.parts?.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map(p => p.text).join('\n') || ""}
+                        </MessageResponse>
                       )}
                     </MessageContent>
                     {message.role === "assistant" && status !== "streaming" && (
@@ -348,10 +346,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                         <CopyButton 
                           text={
                             message.parts?.map(p => p.type === "text" ? p.text : "").join("\n") 
-                            // @ts-ignore
-                            || message.content 
-                            // @ts-ignore
-                            || message.text 
                             || ""
                           } 
                         />
@@ -383,7 +377,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 <Suggestion
                   key={suggestion}
                   suggestion={suggestion}
-                  onClick={(s) => handleSubmit({ text: s, files: [] } as any)}
+                  onClick={(s) => handleSubmit({ text: s, files: [] })}
                 />
               ))}
             </Suggestions>

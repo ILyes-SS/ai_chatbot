@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useConversations } from "@/app/stores/conversations-store";
-
-interface Project {
-  _id: string;
-  title: string;
-}
+import type { Project } from "@/types";
 
 interface MoveChatModalProps {
   isOpen: boolean;

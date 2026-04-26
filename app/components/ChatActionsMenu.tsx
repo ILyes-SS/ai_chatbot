@@ -19,13 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Conversation {
-  _id: string;
-  title: string;
-  pinned: boolean;
-  projectId?: string | null;
-}
+import type { Conversation } from "@/types";
 
 interface ChatActionsMenuProps {
   conversation: Conversation;

@@ -2,12 +2,12 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { useProjects } from "@/app/stores/projects-store";
+import { useProjects, type ProjectItem } from "@/app/stores/projects-store";
 import ProjectActionsMenu from "./ProjectActionsMenu";
 
 interface ProjectListProps {
   /** Initial projects are now only used for hydration; the store is the source of truth */
-  initialProjects?: any[];
+  initialProjects?: ProjectItem[];
 }
 
 export default function ProjectList({ initialProjects: _unused }: ProjectListProps) {
