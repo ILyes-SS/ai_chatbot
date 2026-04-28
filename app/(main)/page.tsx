@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
@@ -29,6 +29,12 @@ export default function Home() {
     };
 
 
+  // Handle redirect in a useEffect to avoid SSR crash
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/sign-in");
+    }
+  }, [isPending, session, router]);
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface p-4">

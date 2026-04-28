@@ -1,0 +1,76 @@
+services:
+  # Local Development Environment
+  dev:
+    build:
+      context: .
+      target: dev
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/ai_chatbot
+      - REDIS_URL=redis://redis:6379
+      - WATCHPACK_POLLING=true
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      # Prevent overwriting node_modules and .next with local host folders
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - dev
+
+  mongodb:
+    image: mongo:latest
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - dev
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - dev
+
+  # Production Environment
+  prod:
+    build:
+      context: .
+      target: final
+      args:
+        - MONGODB_URI=${MONGODB_URI}
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    profiles:
+      - prod
+
+volumes:
+  mongodb_data:
+  redis_data:
