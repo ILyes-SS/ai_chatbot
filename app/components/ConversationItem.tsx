@@ -23,14 +23,14 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync rename value when conversation title changes (e.g. from optimistic update elsewhere)
+  
   useEffect(() => {
     if (!isRenaming) {
       setRenameValue(conversation.title);
     }
   }, [conversation.title, isRenaming]);
 
-  // Handle focus for renaming
+  
   useEffect(() => {
     if (isRenaming && inputRef.current) {
       inputRef.current.focus();
@@ -45,7 +45,7 @@ export default function ConversationItem({ conversation, expanded, isActive, onD
       return;
     }
 
-    // Optimistic update — title changes instantly in sidebar
+    
     optimisticUpdateConversation(conversation._id, { title: renameValue.trim() });
     setIsRenaming(false);
   };

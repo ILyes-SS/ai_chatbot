@@ -14,7 +14,7 @@ interface DeleteProjectModalProps {
 export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, isPending }: DeleteProjectModalProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  // Close on Escape
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -32,12 +32,12 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
       className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Click outside to close */}
+      {}
       <div className="absolute inset-0" onClick={(e) => { e.stopPropagation(); onClose(); }} />
 
       <div className="relative w-full max-w-[400px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Header */}
+        {}
         <div className="mb-6">
           <h2 className="text-[20px] font-semibold text-on-surface tracking-tight">Delete Project</h2>
           <p className="text-[14px] text-on-surface-variant mt-2 leading-relaxed">
@@ -45,7 +45,7 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
           </p>
         </div>
 
-        {/* Actions */}
+        {}
         <div className="flex items-center justify-end gap-3">
           <button 
             onClick={onClose}

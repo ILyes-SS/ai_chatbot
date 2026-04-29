@@ -1,8 +1,8 @@
 import type { UIMessage } from "ai";
 
-// ---------------------------------------------------------------------------
-// Project
-// ---------------------------------------------------------------------------
+
+
+
 export type Project = {
   _id: string;
   title: string;
@@ -12,9 +12,9 @@ export type Project = {
   updatedAt: string | Date | null;
 };
 
-// ---------------------------------------------------------------------------
-// Conversation
-// ---------------------------------------------------------------------------
+
+
+
 export type Conversation = {
   _id: string;
   title: string;
@@ -26,9 +26,9 @@ export type Conversation = {
   updatedAt: string | null;
 };
 
-// ---------------------------------------------------------------------------
-// Source (used in chat for web-search grounding results)
-// ---------------------------------------------------------------------------
+
+
+
 export interface SourceItem {
   url?: string;
   uri?: string;

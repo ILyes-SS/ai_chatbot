@@ -40,7 +40,7 @@ const providers = {
   },
   claude: {
     createUrl: (q: string) =>
-      `https://claude.ai/new?${new URLSearchParams({
+      `https:
         q,
       })}`,
     icon: (
@@ -93,7 +93,7 @@ const providers = {
   },
   scira: {
     createUrl: (q: string) =>
-      `https://scira.ai/?${new URLSearchParams({
+      `https:
         q,
       })}`,
     icon: (
@@ -158,7 +158,7 @@ const providers = {
   },
   t3: {
     createUrl: (q: string) =>
-      `https://t3.chat/new?${new URLSearchParams({
+      `https:
         q,
       })}`,
     icon: <MessageCircleIcon />,
@@ -166,7 +166,7 @@ const providers = {
   },
   v0: {
     createUrl: (q: string) =>
-      `https://v0.app?${new URLSearchParams({
+      `https:
         q,
       })}`,
     icon: (

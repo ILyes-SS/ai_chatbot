@@ -9,9 +9,9 @@ import {
 import type { CreateProjectData, UpdateProjectData } from "@/lib/schemas/project";
 import { useToast } from "./toast";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+
+
+
 export interface ProjectItem {
   _id: string;
   title: string;
@@ -19,7 +19,7 @@ export interface ProjectItem {
   media?: string[];
   updatedAt: string | Date | null;
   createdAt?: string | Date | null;
-  /** Marks a project as being optimistically added (not yet confirmed by server) */
+  
   _optimistic?: boolean;
 }
 
@@ -30,9 +30,9 @@ interface ProjectsContextValue {
   optimisticDeleteProject: (id: string) => void;
 }
 
-// ---------------------------------------------------------------------------
-// Sorting helper
-// ---------------------------------------------------------------------------
+
+
+
 function sortProjects(list: ProjectItem[]): ProjectItem[] {
   return [...list].sort((a, b) => {
     const aTime = a.updatedAt ? new Date(a.updatedAt as string).getTime() : 0;
@@ -41,9 +41,9 @@ function sortProjects(list: ProjectItem[]): ProjectItem[] {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
+
+
+
 const ProjectsContext = createContext<ProjectsContextValue | null>(null);
 
 export function useProjects() {
@@ -52,9 +52,9 @@ export function useProjects() {
   return ctx;
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
+
+
+
 interface ProjectsProviderProps {
   initialProjects: ProjectItem[];
   children: React.ReactNode;
@@ -67,7 +67,7 @@ export function ProjectsProvider({ initialProjects, children }: ProjectsProvider
   const projectsRef = useRef(projects);
   projectsRef.current = projects;
 
-  // ── Create ──────────────────────────────────────────────────────────────
+  
   const optimisticAddProject = useCallback(
     async (data: CreateProjectData): Promise<{ _id: string } | null> => {
       const tempId = `temp-${Date.now()}`;

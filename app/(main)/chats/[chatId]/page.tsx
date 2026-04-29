@@ -161,12 +161,11 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
         if (chatRes.success && chatRes.data) {
           setConversation(chatRes.data);
           if (chatRes.data.messages) {
-            // Type casting since we trust the database schema matches the expected format
+            
             setMessages(chatRes.data.messages as UIMessage[]);
           }
         }
       } catch (e) {
-        console.error("Failed to load conversation:", e);
       } finally {
         setLoading(false);
       }
@@ -233,7 +232,7 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="flex-1  overflow-hidden relative  bg-background flex flex-col">
           {conversation && <ChatHeader conversation={conversation} />}
-          {/* Header for Model Selector */}
+          {}
           <div className="py-2 pt-0 md:h-14 border-b border-border/40 flex items-center px-2 md:px-4 bg-muted/10 shrink-0">
             <ModelSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
               <ModelSelectorTrigger asChild>

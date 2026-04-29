@@ -23,15 +23,15 @@ import type { Conversation } from "@/types";
 
 interface ChatActionsMenuProps {
   conversation: Conversation;
-  /** Called when the user selects "Rename" from the dropdown */
+  
   onRename?: () => void;
-  /** Called after the conversation is deleted */
+  
   onDelete?: () => void;
-  /** Custom trigger element. Defaults to a MoreVertical icon button. */
+  
   trigger?: React.ReactNode;
-  /** Content alignment for the dropdown. Defaults to "end". */
+  
   align?: "start" | "center" | "end";
-  /** Called when the dropdown open state changes */
+  
   onOpenChange?: (isOpen: boolean) => void;
 }
 
@@ -49,12 +49,12 @@ export default function ChatActionsMenu({
   const { projects } = useProjects();
 
   const handleTogglePin = () => {
-    // Optimistic: conversation moves between Pinned/Recent instantly
+    
     optimisticUpdateConversation(conversation._id, { pinned: !conversation.pinned });
   };
 
   const handleDelete = () => {
-    // Optimistic: conversation vanishes from sidebar instantly
+    
     optimisticDeleteConversation(conversation._id);
     setShowDeleteModal(false);
     onDelete?.();

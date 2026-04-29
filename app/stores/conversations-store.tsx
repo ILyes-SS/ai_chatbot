@@ -9,9 +9,9 @@ import {
 import type { CreateConversationData, UpdateConversationData } from "@/lib/schemas/conversation";
 import { useToast } from "./toast";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+
+
+
 export interface ConversationItem {
   _id: string;
   title: string;
@@ -19,7 +19,7 @@ export interface ConversationItem {
   projectId?: string | null;
   updatedAt: string | null;
   createdAt?: string | null;
-  /** Marks a conversation as being optimistically added (not yet confirmed by server) */
+  
   _optimistic?: boolean;
 }
 
@@ -30,23 +30,23 @@ interface ConversationsContextValue {
   optimisticDeleteConversation: (id: string) => void;
 }
 
-// ---------------------------------------------------------------------------
-// Sorting helper
-// ---------------------------------------------------------------------------
+
+
+
 function sortConversations(list: ConversationItem[]): ConversationItem[] {
   return [...list].sort((a, b) => {
-    // Pinned first
+    
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    // Then by updatedAt descending
+    
     const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
     const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
     return bTime - aTime;
   });
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
+
+
+
 const ConversationsContext = createContext<ConversationsContextValue | null>(null);
 
 export function useConversations() {
@@ -55,9 +55,9 @@ export function useConversations() {
   return ctx;
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
+
+
+
 interface ConversationsProviderProps {
   initialConversations: ConversationItem[];
   children: React.ReactNode;
@@ -72,18 +72,18 @@ export function ConversationsProvider({ initialConversations, children }: Conver
   const deletedIds = useRef<Set<string>>(new Set());
   const pendingUpdates = useRef<Map<string, Partial<ConversationItem>>>(new Map());
 
-  // Sync with server data on router.refresh() 
-  // We merge optimistic items with fresh server items.
+  
+  
   React.useEffect(() => {
     setConversations((prev) => {
       const optimisticIds = new Set(prev.filter(c => c._optimistic).map(c => c._id));
       
-      // Filter out items that are currently pending deletion
+      
       let freshItems = initialConversations.filter(
         c => !optimisticIds.has(c._id) && !deletedIds.current.has(c._id)
       );
 
-      // Apply any pending updates to the fresh items so they don't revert to stale server state
+      
       if (pendingUpdates.current.size > 0) {
         freshItems = freshItems.map(c => {
           const updates = pendingUpdates.current.get(c._id);
@@ -97,11 +97,11 @@ export function ConversationsProvider({ initialConversations, children }: Conver
     });
   }, [initialConversations]);
 
-  // Use a ref to always have access to the latest state in async callbacks
+  
   const conversationsRef = useRef(conversations);
   conversationsRef.current = conversations;
 
-  // ── Create ──────────────────────────────────────────────────────────────
+  
   const optimisticAddConversation = useCallback(
     async (data: CreateConversationData): Promise<string | null> => {
       const tempId = `temp-${Date.now()}`;

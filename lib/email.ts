@@ -23,7 +23,6 @@ export async function sendEmail({
   });
 
   if (error) {
-    console.error("Failed to send email:", error);
     throw new Error(`Failed to send email: ${error.message}`);
   }
 }

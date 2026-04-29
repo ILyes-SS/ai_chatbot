@@ -17,8 +17,8 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
   const { conversations, optimisticUpdateConversation } = useConversations();
   const router = useRouter();
   
-  // Use live data from the store so that any server updates (like auto-naming) 
-  // or optimistic updates are immediately reflected here.
+  
+  
   const liveConversation = conversations.find(c => c._id === initialConversation?._id) || initialConversation;
   
   const [renameValue, setRenameValue] = useState(liveConversation?.title || "");
@@ -26,7 +26,7 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync state when conversation title changes externally
+  
   useEffect(() => {
     if (liveConversation?.title && !isRenaming) {
       setRenameValue(liveConversation.title);
@@ -52,7 +52,7 @@ export default function ChatHeader({ conversation: initialConversation }: ChatHe
     const newTitle = renameValue.trim();
     setIsRenaming(false);
 
-    // Optimistic update — both header and sidebar update simultaneously
+    
     optimisticUpdateConversation(liveConversation._id, { title: newTitle });
   };
 

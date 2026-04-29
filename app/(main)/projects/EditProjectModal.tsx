@@ -22,7 +22,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
 
   useEffect(() => setMounted(true), []);
 
-  // Reset values when modal opens or project changes
+  
   useEffect(() => {
     if (isOpen) {
       setTitle(project.title);
@@ -34,7 +34,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
     e.preventDefault();
     if (!title.trim()) return;
 
-    // Optimistic: title/context update reflected instantly in project card and detail page
+    
     optimisticUpdateProject(project._id, { title, context });
     onClose();
   };
@@ -49,7 +49,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
       <div className="absolute inset-0" onClick={(e) => { e.stopPropagation(); onClose(); }} />
 
       <div className="relative w-full max-w-[480px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
+        {}
         <div className="flex items-start justify-between p-6 pb-4">
           <div>
             <h2 className="text-[20px] font-semibold text-on-surface tracking-tight">Edit project</h2>
@@ -66,7 +66,7 @@ export default function EditProjectModal({ isOpen, onClose, project }: EditProje
           </button>
         </div>
 
-        {/* Form */}
+        {}
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-2">
           <div className="space-y-4">
             <div>

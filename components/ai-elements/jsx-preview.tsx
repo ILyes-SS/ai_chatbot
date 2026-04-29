@@ -73,14 +73,14 @@ const matchJsxTag = (code: string) => {
 };
 
 const stripIncompleteTag = (text: string) => {
-  // Find the last '<' that isn't part of a complete tag
+  
   const lastOpen = text.lastIndexOf("<");
   if (lastOpen === -1) {
     return text;
   }
 
   const afterOpen = text.slice(lastOpen);
-  // If there's no closing '>' after the last '<', it's an incomplete tag
+  
   if (!afterOpen.includes(">")) {
     return text.slice(0, lastOpen);
   }
@@ -96,13 +96,13 @@ const completeJsxTag = (code: string) => {
   while (currentPosition < code.length) {
     const match = matchJsxTag(code.slice(currentPosition));
     if (!match) {
-      // No more tags found, strip any trailing incomplete tag
+      
       result += stripIncompleteTag(code.slice(currentPosition));
       break;
     }
     const { tagName, type, endIndex } = match;
 
-    // Include any text content before this tag
+    
     result += code.slice(currentPosition, currentPosition + endIndex);
 
     if (type === "opening") {

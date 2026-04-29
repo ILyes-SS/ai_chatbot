@@ -13,10 +13,7 @@ import type { Conversation } from "@/types";
 
 const COLLECTION = "conversation";
 
-/**
- * Converts a MongoDB document to a plain object with all ObjectId fields
- * serialised to strings so the result is safe to return from server actions.
- */
+
 function serialize(doc: WithId<Document>): Conversation {
   return {
     _id: doc._id.toString(),
@@ -32,9 +29,9 @@ function serialize(doc: WithId<Document>): Conversation {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Create
-// ---------------------------------------------------------------------------
+
+
+
 export async function createConversation(data: CreateConversationData) {
   try {
     const session = await getAuthSession();
@@ -79,9 +76,9 @@ export async function createConversation(data: CreateConversationData) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Read — all for current user
-// ---------------------------------------------------------------------------
+
+
+
 export async function getConversations() {
   try {
     const session = await getAuthSession();
@@ -102,9 +99,9 @@ export async function getConversations() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Read — all for a specific project
-// ---------------------------------------------------------------------------
+
+
+
 export async function getConversationsByProjectId(projectId: string) {
   try {
     const session = await getAuthSession();
@@ -128,9 +125,9 @@ export async function getConversationsByProjectId(projectId: string) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Read — single by id
-// ---------------------------------------------------------------------------
+
+
+
 export async function getConversationById(id: string) {
   try {
     const session = await getAuthSession();
@@ -153,9 +150,9 @@ export async function getConversationById(id: string) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Update
-// ---------------------------------------------------------------------------
+
+
+
 export async function updateConversation(
   id: string,
   data: UpdateConversationData,
@@ -171,7 +168,7 @@ export async function updateConversation(
 
     const db = await getDb();
 
-    // Build the $set and optional $push operations
+    
     const setFields: Record<string, unknown> = { updatedAt: new Date() };
 
     if (parsed.data.title !== undefined) setFields.title = parsed.data.title;
@@ -218,9 +215,9 @@ export async function updateConversation(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Delete
-// ---------------------------------------------------------------------------
+
+
+
 export async function deleteConversation(id: string) {
   try {
     const session = await getAuthSession();

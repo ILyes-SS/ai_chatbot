@@ -2,9 +2,9 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef } from "react";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+
+
+
 type ToastType = "error" | "success" | "info";
 
 interface Toast {
@@ -17,9 +17,9 @@ interface ToastContextValue {
   showToast: (message: string, type?: ToastType) => void;
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
+
+
+
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function useToast() {
@@ -28,9 +28,9 @@ export function useToast() {
   return ctx;
 }
 
-// ---------------------------------------------------------------------------
-// Provider + Container
-// ---------------------------------------------------------------------------
+
+
+
 let idCounter = 0;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {

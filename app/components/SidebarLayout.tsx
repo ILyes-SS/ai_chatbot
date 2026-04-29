@@ -15,14 +15,14 @@ export default function SidebarLayout({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close sidebar on route change on mobile
+  
   useEffect(() => {
     setIsMobileOpen(false);
   }, [pathname]);
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      {/* Sidebar Container */}
+      {}
       <div className={`
         fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}

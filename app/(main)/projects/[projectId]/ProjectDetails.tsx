@@ -7,7 +7,7 @@ import { useProjects } from "@/app/stores/projects-store";
 import EditProjectModal from "../EditProjectModal";
 import type { Project, Conversation } from "@/types";
 
-// Re-export for page.tsx
+
 export type { Project, Conversation };
 
 interface ProjectDetailsProps {
@@ -19,7 +19,7 @@ export default function ProjectDetails({ project: initialProject, conversations 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { projects } = useProjects();
 
-  // Get live project data from the store (reflects optimistic edits)
+  
   const project = projects.find((p) => p._id === initialProject._id) as Project | undefined ?? initialProject;
 
   const formatRelativeTime = (dateInput: string | Date | null) => {

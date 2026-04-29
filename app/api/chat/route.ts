@@ -5,7 +5,7 @@ import type { SourceItem } from "@/types";
 
 export const maxDuration = 30;
 
-// Initialize the gateway
+
 const gateway = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     ...msg,
     parts: msg.parts?.map(part => {
       if (part.type === "file" && typeof part.url === "string" && part.url.startsWith("data:")) {
-        // The Google API strictly requires bare base64 for inlineData, without the data URL prefix
+        
         const base64Data = part.url.split(",")[1];
         return { ...part, url: base64Data };
       }
@@ -50,9 +50,6 @@ export async function POST(req: Request) {
     providerOptions,
     onFinish: async (event) => {
       const lastUserMessage = messages[messages.length - 1];
-      console.log("event");
-      console.dir(event, {depth: null});
-
       try {
         const providerMeta = event.providerMetadata as Record<string, Record<string, unknown>> | undefined;
         const googleMeta = providerMeta?.google;
@@ -94,17 +91,14 @@ export async function POST(req: Request) {
                 if (lastUserMessage.parts) {
                   textContent = lastUserMessage.parts.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map((p) => p.text).join(" ");
                 }
-                console.log("Generating title for prompt: ", textContent);
                 if (textContent) {
                   const titleResult = await generateText({
                     model: gateway(modelToUse),
                     prompt: `Generate a short, concise title (max 5 words) summarizing this chat prompt. Do not use quotes, punctuation at the end, or any prefixes. Prompt: "${textContent}"`
                   });
                   newTitle = titleResult.text.trim();
-                  console.log("Generated Title:", newTitle);
                 }
               } catch (e) {
-                console.error("Failed to generate title", e);
               }
             }
           }
@@ -115,7 +109,6 @@ export async function POST(req: Request) {
           ...(newTitle ? { title: newTitle } : {}),
         }, { overwriteMessages: true });
       } catch (e) {
-        console.error("Failed to save conversation messages", e);
       }
     },
   });

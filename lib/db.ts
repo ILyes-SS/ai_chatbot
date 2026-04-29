@@ -10,8 +10,8 @@ let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
-  // In development, use a global variable so the MongoClient
-  // is preserved across hot reloads and doesn't leak connections.
+  
+  
   const globalWithMongo = globalThis as typeof globalThis & {
     _mongoClient?: MongoClient;
     _mongoClientPromise?: Promise<MongoClient>;
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === "development") {
   client = globalWithMongo._mongoClient;
   clientPromise = globalWithMongo._mongoClientPromise!;
 } else {
-  // In production, create a single module-scoped client.
+  
   client = new MongoClient(uri);
   clientPromise = client.connect();
 }

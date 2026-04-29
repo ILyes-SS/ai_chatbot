@@ -19,7 +19,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
 
   useEffect(() => setMounted(true), []);
 
-  // Close on Escape
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -37,19 +37,19 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
   );
 
   const handleProjectAssign = (projectId: string | null) => {
-    // Optimistic: projectId updates instantly, modal closes
+    
     optimisticUpdateConversation(conversation._id, { projectId });
     onClose();
   };
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4">
-      {/* Click outside to close */}
+      {}
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative w-full max-w-[480px] bg-zinc-50 border border-transparent/50 rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Header */}
+        {}
         <div className="flex items-start justify-between p-4 pb-2 sm:p-6 sm:pb-4">
           <div>
             <h2 className="text-[20px] font-semibold text-zinc-900 tracking-tight">Move chat</h2>
@@ -66,7 +66,7 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
           </button>
         </div>
 
-        {/* Search Input */}
+        {}
         <div className="px-4 pb-4 sm:px-6 sm:pb-2">
           <div className="relative group">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-on-surface-variant group-focus-within:text-on-surface-variant transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -82,10 +82,10 @@ export default function MoveChatModal({ isOpen, onClose, conversation, projects 
             />
           </div>
 
-          {/* Projects List Container */}
+          {}
           <div className="border border-t-0 border-transparent rounded-b-xl overflow-hidden bg-primary-container/60 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-surface-variant scrollbar-track-transparent pb-1">
             
-            {/* Remove from project option */}
+            {}
             {conversation.projectId && (
               <button 
                 onClick={() => handleProjectAssign(null)}

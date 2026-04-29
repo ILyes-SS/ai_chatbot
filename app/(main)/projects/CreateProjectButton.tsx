@@ -26,7 +26,7 @@ export default function CreateProjectButton() {
 
     setIsSubmitting(true);
     try {
-      // Optimistic: new project card appears in list instantly
+      
       const result = await optimisticAddProject({ title, context });
       if (result) {
         handleClose();

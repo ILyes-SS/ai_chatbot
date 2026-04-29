@@ -14,9 +14,7 @@ import type { Project } from "@/types";
 
 const COLLECTION = "project";
 
-/**
- * Converts a MongoDB document to a plain object with _id serialised to string.
- */
+
 function serialize(doc: WithId<Document>): Project {
   return {
     _id: doc._id.toString(),
@@ -28,9 +26,9 @@ function serialize(doc: WithId<Document>): Project {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Create
-// ---------------------------------------------------------------------------
+
+
+
 export async function createProject(data: CreateProjectData) {
   try {
     const session = await getAuthSession();
@@ -68,9 +66,9 @@ export async function createProject(data: CreateProjectData) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Read — all for current user
-// ---------------------------------------------------------------------------
+
+
+
 export async function getProjects() {
   try {
     const session = await getAuthSession();
@@ -91,9 +89,9 @@ export async function getProjects() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Read — single by id
-// ---------------------------------------------------------------------------
+
+
+
 export async function getProjectById(id: string) {
   try {
     const session = await getAuthSession();
@@ -116,9 +114,9 @@ export async function getProjectById(id: string) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Update
-// ---------------------------------------------------------------------------
+
+
+
 export async function updateProject(
   id: string,
   data: UpdateProjectData,
@@ -161,9 +159,9 @@ export async function updateProject(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Delete
-// ---------------------------------------------------------------------------
+
+
+
 export async function deleteProject(id: string) {
   try {
     const session = await getAuthSession();

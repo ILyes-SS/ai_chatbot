@@ -21,8 +21,8 @@ interface EnvironmentVariablesContextType {
   setShowValues: (show: boolean) => void;
 }
 
-// Default noop for context default value
-// oxlint-disable-next-line eslint(no-empty-function)
+
+
 const noop = () => {};
 
 const EnvironmentVariablesContext =

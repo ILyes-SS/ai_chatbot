@@ -25,10 +25,10 @@ export default function ProjectActionsMenu({ project }: ProjectActionsMenuProps)
   const router = useRouter();
 
   const handleDelete = () => {
-    // Optimistic: project card vanishes from grid instantly
+    
     optimisticDeleteProject(project._id);
     setShowDeleteModal(false);
-    // If we're on the project detail page, navigate away
+    
     if (window.location.pathname.includes(`/projects/${project._id}`)) {
       router.push("/projects");
     }

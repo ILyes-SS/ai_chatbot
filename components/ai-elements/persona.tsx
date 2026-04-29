@@ -12,9 +12,9 @@ import {
 import type { FC, ReactNode } from "react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
-// Delays Rive initialization by one frame so that React Strict Mode's
-// immediate unmount cycle never creates a WebGL2 context. Only the
-// second (real) mount will initialise, avoiding context exhaustion.
+
+
+
 const useStrictModeSafeInit = () => {
   const [ready, setReady] = useState(false);
 
@@ -48,7 +48,7 @@ interface PersonaProps {
   variant?: keyof typeof sources;
 }
 
-// The state machine name is always 'default' for Elements AI visuals
+
 const stateMachine = "default";
 
 const sources = {
@@ -106,12 +106,12 @@ const useTheme = (enabled: boolean) => {
   const [theme, setTheme] = useState<"light" | "dark">(getCurrentTheme);
 
   useEffect(() => {
-    // Skip if not enabled (avoids unnecessary observers for non-dynamic-color variants)
+    
     if (!enabled) {
       return;
     }
 
-    // Watch for classList changes
+    
     const observer = new MutationObserver(() => {
       setTheme(getCurrentTheme());
     });
@@ -121,7 +121,7 @@ const useTheme = (enabled: boolean) => {
       attributes: true,
     });
 
-    // Watch for OS-level theme changes
+    
     let mql: MediaQueryList | null = null;
     const handleMediaChange = () => {
       setTheme(getCurrentTheme());

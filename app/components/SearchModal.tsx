@@ -55,7 +55,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   const filteredItems = query.trim() === "" 
-    ? items.slice(0, 15) // Show top 15 recent by default
+    ? items.slice(0, 15) 
     : items.filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
 
   const handleSelect = (item: SearchItem) => {
