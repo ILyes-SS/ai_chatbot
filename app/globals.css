@@ -10,7 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-lato: var(--font-lato);
-  
+  --font-carattere: var(--font-carattere);
   /* The Lucid Flow - Core Colors */
   --color-surface: var(--surface);
   --color-surface-container-lowest: var(--surface-container-lowest);

@@ -81,7 +81,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2 ">
           <p className="text-xl max-sm:text-lg  text-on-surface-variant">
-           Good Morning, <span className="text-2xl  max-sm:text-xl font-bold text-on-surface-variant">{session.user.name.split('@')[0]}</span>
+           Good Morning, <span className="text-3xl font-carattere max-sm:text-xl font-bold text-on-surface-variant">{session.user.name.split('@')[0]}</span>
           </p>
         </div>
         <div className="flex items-center gap-2 mt-2 mb-3">
