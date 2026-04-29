@@ -1,43 +1,14 @@
 import { z } from "zod";
-
-// --- AI SDK UIMessage part schemas ---
-const textPartSchema = z.object({
-  type: z.literal("text"),
-  text: z.string(),
-});
-
-const toolInvocationPartSchema = z.object({
-  type: z.literal("tool-invocation"),
-  toolInvocationId: z.string(),
-  toolName: z.string(),
-  args: z.unknown(),
-  state: z.enum(["partial-call", "call", "result"]),
-  output: z.unknown().optional(),
-});
-
-const filePartSchema = z.object({
-  type: z.literal("file"),
-  mediaType: z.string(),
-  url: z.string(),
-  filename: z.string().optional(),
-});
-
-const messagePartSchema = z.discriminatedUnion("type", [
-  textPartSchema,
-  toolInvocationPartSchema,
-  filePartSchema,
-]);
+import type { UIMessage } from "ai";
 
 // --- AI SDK UIMessage schema ---
-export const messageSchema = z.object({
-  id: z.string(),
-  role: z.enum(["user", "assistant", "system", "tool"]),
-  parts: z.array(messagePartSchema),
-  createdAt: z.coerce.date().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+// AI SDK's UIMessage is highly complex with many part types. We use z.custom
+// to bypass deep structural validation and rely on the TS type.
+export const messageSchema = z.custom<UIMessage>((val) => {
+  return typeof val === "object" && val !== null && "id" in val && "role" in val;
 });
 
-export type Message = z.infer<typeof messageSchema>;
+export type Message = UIMessage;
 
 // --- Create conversation ---
 export const createConversationSchema = z.object({

@@ -9,6 +9,7 @@ import {
   type CreateConversationData,
   type UpdateConversationData,
 } from "@/lib/schemas/conversation";
+import type { Conversation } from "@/types";
 
 const COLLECTION = "conversation";
 
@@ -16,13 +17,16 @@ const COLLECTION = "conversation";
  * Converts a MongoDB document to a plain object with all ObjectId fields
  * serialised to strings so the result is safe to return from server actions.
  */
-function serialize(doc: WithId<Document>) {
+function serialize(doc: WithId<Document>): Conversation {
   return {
-    ...doc,
     _id: doc._id.toString(),
+    title: doc.title ?? "Untitled",
+    pinned: doc.pinned ?? false,
     projectId: doc.projectId instanceof ObjectId
       ? doc.projectId.toString()
       : doc.projectId ?? null,
+    userId: doc.userId,
+    messages: doc.messages ?? [],
     updatedAt: doc.updatedAt?.toISOString() || null,
     createdAt: doc.createdAt?.toISOString() || null,
   };
@@ -168,7 +172,6 @@ export async function updateConversation(
     const db = await getDb();
 
     // Build the $set and optional $push operations
-    const updateDoc: Record<string, unknown> = {};
     const setFields: Record<string, unknown> = { updatedAt: new Date() };
 
     if (parsed.data.title !== undefined) setFields.title = parsed.data.title;
@@ -179,11 +182,13 @@ export async function updateConversation(
         : null;
     }
 
-    updateDoc.$set = setFields;
+    const updateDoc: any = {
+      $set: setFields,
+    };
 
     if (parsed.data.messages) {
       if (options?.overwriteMessages) {
-        updateDoc.$set.messages = parsed.data.messages;
+        setFields.messages = parsed.data.messages;
       } else if (parsed.data.messages.length > 0) {
         updateDoc.$push = {
           messages: { $each: parsed.data.messages },

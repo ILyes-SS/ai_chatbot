@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage, type FileUIPart } from "ai";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Loader2, PaperclipIcon, ChevronDown, BrainIcon, GlobeIcon, RefreshCcw, Copy, Check } from "lucide-react";
 import {
@@ -67,8 +68,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { getConversationById } from "@/actions/conversations";
-import { getProjects } from "@/actions/projects";
+import { useProjects } from "@/app/stores/projects-store";
 import ChatHeader from "@/app/components/ChatHeader";
+import { useToast } from "@/app/stores/toast";
+import type { Conversation as ConversationType, SourceItem } from "@/types";
 
 import { usePromptInputAttachments } from "@/components/ai-elements/prompt-input";
 
@@ -112,7 +115,7 @@ function CopyButton({ text }: { text: string }) {
   const initialSuggestions = [
     "How can you help me today?",
     "Tell me a joke",
-    "Summarize our conversation",
+    "Tell me a fun fact",
     "What are some good productivity tips?",
   ];
 
@@ -125,18 +128,26 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [useThinking, setUseThinking] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
+  const { showToast } = useToast();
 
   const { messages, setMessages, status, sendMessage, regenerate } = useChat({
-    api: "/api/chat",
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
     onFinish: () => {
       router.refresh();
+    },
+    onError: (error) => {
+      if (error.message?.toLowerCase().includes("quota") || error.message?.includes("429")) {
+        showToast("You exceeded your quota. You cannot send requests right now. Please retry in " + Number(error.message.split('Please retry in ')[1].slice(0, -2)).toFixed(1) + " seconds", "error");
+      } else {
+        showToast(error.message || "An error occurred.", "error");
+      }
     }
   });
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
-  const [conversation, setConversation] = useState<any>(null);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [conversation, setConversation] = useState<ConversationType | null>(null);
+  const { projects } = useProjects();
 
   useEffect(() => {
     async function loadChat() {
@@ -145,20 +156,14 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
         return;
       }
       try {
-        const [chatRes, projectsRes] = await Promise.all([
-          getConversationById(chatId),
-          getProjects()
-        ]);
+        const chatRes = await getConversationById(chatId);
         
         if (chatRes.success && chatRes.data) {
           setConversation(chatRes.data);
           if (chatRes.data.messages) {
             // Type casting since we trust the database schema matches the expected format
-            setMessages(chatRes.data.messages as any);
+            setMessages(chatRes.data.messages as UIMessage[]);
           }
-        }
-        if (projectsRes.success && projectsRes.data) {
-          setProjects(projectsRes.data);
         }
       } catch (e) {
         console.error("Failed to load conversation:", e);
@@ -186,9 +191,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
           } 
           
           return {
-            type: "file",
-            mediaType: (f as any).contentType || f.mediaType || "application/octet-stream",
-            filename: (f as any).name || f.filename || "attachment",
+            type: "file" as const,
+            mediaType: f.mediaType || "application/octet-stream",
+            filename: f.filename || "attachment",
             url: url,
           };
         })
@@ -196,11 +201,21 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
       
       const validFiles = filesToAttach.filter(Boolean);
 
+      const activeProject = conversation?.projectId 
+        ? projects.find((p) => p._id === conversation.projectId) 
+        : null;
+
       sendMessage({
         text: message.text || "",
-        files: validFiles
-      } as any, {
-        body: { chatId, model, useThinking, useWebSearch }
+        files: validFiles as FileUIPart[],
+      }, {
+        body: { 
+          chatId, 
+          model, 
+          useThinking, 
+          useWebSearch,
+          projectContext: activeProject?.context
+        }
       });
       setInput("");
     }
@@ -216,17 +231,17 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
 
   return (
       <div className="flex flex-col h-full w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
-        <div className="flex-1 overflow-hidden relative border border-border/40 rounded-t-xl shadow-sm bg-background flex flex-col">
-          {conversation && <ChatHeader conversation={conversation} projects={projects} />}
+        <div className="flex-1  overflow-hidden relative  bg-background flex flex-col">
+          {conversation && <ChatHeader conversation={conversation} />}
           {/* Header for Model Selector */}
-          <div className="h-14 border-b border-border/40 flex items-center px-4 bg-muted/10 shrink-0">
+          <div className="py-2 pt-0 md:h-14 border-b border-border/40 flex items-center px-2 md:px-4 bg-muted/10 shrink-0">
             <ModelSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
               <ModelSelectorTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 px-3 text-muted-foreground hover:text-foreground rounded-lg text-sm font-medium border border-border/50 bg-background/50 hover:bg-muted shadow-sm">
-                  <span className="truncate max-w-[150px]">
+                <Button variant="ghost" size="sm" className="h-6 md:h-9 px-2 md:px-3 text-muted-foreground hover:text-foreground rounded-lg text-xs md:text-sm font-medium border border-border/50 bg-background/50 hover:bg-muted shadow-sm">
+                  <span className="truncate max-w-[100px] md:max-w-[150px]">
                     {availableModels.find((m) => m.id === model)?.name || "Select Model"}
                   </span>
-                  <ChevronDown className="ml-2 size-4 opacity-50 shrink-0" />
+                  <ChevronDown className="ml-1 md:ml-2 size-3 md:size-4 opacity-50 shrink-0" />
                 </Button>
               </ModelSelectorTrigger>
               <ModelSelectorContent>
@@ -252,8 +267,8 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               </ModelSelectorContent>
             </ModelSelector>
           </div>
-          <Conversation className="flex-1 overflow-y-auto">
-            <ConversationContent className="px-4 py-6 md:px-8">
+          <Conversation className="flex-1 ">
+            <ConversationContent className="px-4 py-6 md:px-8 ">
               {messages.length === 0 ? (
                 <ConversationEmptyState
                   icon={<MessageSquare className="size-12 text-muted-foreground/60" />}
@@ -265,24 +280,23 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                   <Message from={message.role} key={message.id}>
                     {message.role === "assistant" && (
                       (() => {
-                        const sources = [
-                          ...(message.metadata?.sources as any[] || []),
-                          ...(message.parts?.filter(p => 
+                        const metadata = message.metadata as Record<string, unknown> | undefined;
+                        const metadataSources = (Array.isArray(metadata?.sources) ? metadata.sources : []) as SourceItem[];
+                        const partSources = (message.parts?.filter(p => 
                             p.type === "source-url" || 
-                            p.type === "source-document" || 
-                            p.type === "data-sources"
-                          ).flatMap(p => p.type === "data-sources" ? ((p as any).data || []) : [p]) as any[] || [])
-                        ];
+                            p.type === "source-document"
+                          ) ?? []) as SourceItem[];
+                        const sources: SourceItem[] = [...metadataSources, ...partSources];
                         if (sources.length === 0) return null;
                         return (
                           <Sources className="mt-2 px-4">
                             <SourcesTrigger count={sources.length} />
                             <SourcesContent>
-                              {sources.map((source: any, idx: number) => (
+                              {sources.map((source, idx) => (
                                 <Source 
                                   key={idx} 
-                                  href={source.url || source.uri} 
-                                  title={source.title || source.url || source.uri} 
+                                  href={source.url || source.uri || ""} 
+                                  title={source.title || source.url || source.uri || "Source"} 
                                 />
                               ))}
                             </SourcesContent>
@@ -300,12 +314,9 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                             </MessageResponse>
                           );
                         }
-                        // @ts-ignore - Some older definitions of UIMessage.part might not include 'file'
                         if (part.type === "file") {
-                          // @ts-ignore - Handle possible legacy image parts vs standard v5 files
                           const isImage = part.mediaType?.startsWith('image/');
-                          // @ts-ignore
-                          const url = part.url || part.image;
+                          const url = part.url;
                           
                           if (isImage) {
                             return (
@@ -317,7 +328,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                             return (
                               <div key={key} className="mb-2 max-w-[240px] flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-muted/50 text-xs text-muted-foreground">
                                 <PaperclipIcon className="size-4 shrink-0" />
-                                {/* @ts-ignore */}
                                 <span className="truncate">{part.filename || "Attachment"}</span>
                               </div>
                             );
@@ -325,9 +335,10 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                         }
                         return null;
                       }) || (
-                        // Fallback just in case `parts` is not available, try using text directly (for legacy storage compatibility)
-                        // @ts-ignore
-                        <MessageResponse key={`${message.id}-fallback`}>{message.content || message.text}</MessageResponse>
+                        // Fallback: extract text content from parts
+                        <MessageResponse key={`${message.id}-fallback`}>
+                          {message.parts?.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map(p => p.text).join('\n') || ""}
+                        </MessageResponse>
                       )}
                     </MessageContent>
                     {message.role === "assistant" && status !== "streaming" && (
@@ -335,10 +346,6 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                         <CopyButton 
                           text={
                             message.parts?.map(p => p.type === "text" ? p.text : "").join("\n") 
-                            // @ts-ignore
-                            || message.content 
-                            // @ts-ignore
-                            || message.text 
                             || ""
                           } 
                         />
@@ -356,21 +363,21 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 ))
               )}
             </ConversationContent>
-            <ConversationScrollButton />
+            <ConversationScrollButton className="bg-primary text-white" />
           </Conversation>
         </div>
 
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full relative bg-card border border-border/40 border-t-0 shadow-sm rounded-b-xl flex flex-col pt-3"
+          className="w-full relative bg-card  shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-xl  flex flex-col pt-4 max-sm:pt-1 px-1"
         >
           {messages.length === 0 && (
-            <Suggestions className="px-4 pb-2">
+            <Suggestions className="px-4 pb-2 max-sm:pb-1">
               {initialSuggestions.map((suggestion) => (
                 <Suggestion
                   key={suggestion}
                   suggestion={suggestion}
-                  onClick={(s) => handleSubmit({ text: s, files: [] } as any)}
+                  onClick={(s) => handleSubmit({ text: s, files: [] })}
                 />
               ))}
             </Suggestions>
@@ -381,10 +388,10 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
               value={input}
               placeholder="Ask me anything..."
               onChange={(e) => setInput(e.currentTarget.value)}
-              className="resize-none font-medium focus-visible:ring-1 focus-visible:ring-primary/40"
+              className="resize-none font-medium"
             />
           </PromptInputBody>
-          <PromptInputFooter className="px-4 pb-4">
+          <PromptInputFooter className="px-4 pb-4 max-sm:pb-2">
             <PromptInputTools>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -419,13 +426,13 @@ export default function ChatPage({ params }: { params: Promise<{ chatId: string 
                 onTranscriptionChange={(text) => setInput(prev => prev ? prev + " " + text : text)}
                 variant="ghost"
                 size="icon"
-                className="size-8 rounded-full text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+                className="size-8 rounded-full text-surface transition-colors hover:text-foreground hover:bg-muted"
               />
             </PromptInputTools>
 
             <PromptInputSubmit
               status={status === "streaming" ? "streaming" : "ready"}
-              className="hover:bg-muted font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center rounded-full"
+              className="hover:bg-muted hover:text-foreground font-bold transition-all shadow-none size-8 p-0 flex items-center justify-center rounded-full"
             />
           </PromptInputFooter>
         </PromptInput>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DeleteChatModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface DeleteChatModalProps {
 }
 
 export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isPending }: DeleteChatModalProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,20 +25,20 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-[400px] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[400px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-[20px] font-semibold text-zinc-100 tracking-tight">Delete Chat</h2>
-          <p className="text-[14px] text-zinc-400 mt-2 leading-relaxed">
-            Are you sure you want to delete <span className="text-zinc-200 font-medium">"{title}"</span>? This action cannot be undone.
+        <div className="mb-6 ">
+          <h2 className="text-[20px] font-semibold text-on-surface tracking-tight">Delete Chat</h2>
+          <p className="text-[14px] text-wrap text-on-surface-variant mt-2 leading-relaxed">
+            Are you sure you want to delete <span className="text-on-surface font-medium">"{title}"</span>? This action cannot be undone.
           </p>
         </div>
 
@@ -44,7 +47,7 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
           <button 
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 text-[14px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-[14px] font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -66,6 +69,7 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm, title, isP
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DeleteProjectModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface DeleteProjectModalProps {
 }
 
 export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, isPending }: DeleteProjectModalProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,23 +25,23 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center max-sm:items-start justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={(e) => { e.stopPropagation(); onClose(); }} />
 
-      <div className="relative w-full max-w-[400px] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[400px] bg-surface-container-lowest border border-transparent rounded-2xl shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-[20px] font-semibold text-zinc-100 tracking-tight">Delete Project</h2>
-          <p className="text-[14px] text-zinc-400 mt-2 leading-relaxed">
-            Are you sure you want to delete <span className="text-zinc-200 font-medium">"{title}"</span>? All chats inside this project will be affected. This action cannot be undone.
+          <h2 className="text-[20px] font-semibold text-on-surface tracking-tight">Delete Project</h2>
+          <p className="text-[14px] text-on-surface-variant mt-2 leading-relaxed">
+            Are you sure you want to delete <span className="text-on-surface font-medium">"{title}"</span>? All chats inside this project will be affected. This action cannot be undone.
           </p>
         </div>
 
@@ -47,14 +50,14 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
           <button 
             onClick={onClose}
             disabled={isPending}
-            className="px-4 py-2 text-[14px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 cursor-pointer text-[14px] font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button 
             onClick={onConfirm}
             disabled={isPending}
-            className="px-4 py-2 text-[14px] font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2 cursor-pointer text-[14px] font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {isPending ? (
               <>
@@ -69,6 +72,7 @@ export default function DeleteProjectModal({ isOpen, onClose, onConfirm, title, 
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

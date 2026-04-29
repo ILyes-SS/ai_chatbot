@@ -1,36 +1,34 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { updateConversation } from "@/actions/conversations";
+import { useRouter } from "next/navigation";
+import { useConversations } from "@/app/stores/conversations-store";
 import ChatActionsMenu from "./ChatActionsMenu";
 
-interface Conversation {
-  _id: string;
-  title: string;
-  pinned: boolean;
-  projectId?: string | null;
-}
-
-interface Project {
-  _id: string;
-  title: string;
-}
+import type { Conversation } from "@/types";
 
 interface ConversationItemProps {
   conversation: Conversation;
   expanded: boolean;
-  projects: Project[];
   isActive?: boolean;
   onDropdownChange?: (isOpen: boolean) => void;
 }
 
-export default function ConversationItem({ conversation, expanded, projects, isActive, onDropdownChange }: ConversationItemProps) {
+export default function ConversationItem({ conversation, expanded, isActive, onDropdownChange }: ConversationItemProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(conversation.title);
-  const [isPending, startTransition] = useTransition();
+  const { conversations, optimisticUpdateConversation } = useConversations();
+  const router = useRouter();
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync rename value when conversation title changes (e.g. from optimistic update elsewhere)
+  useEffect(() => {
+    if (!isRenaming) {
+      setRenameValue(conversation.title);
+    }
+  }, [conversation.title, isRenaming]);
 
   // Handle focus for renaming
   useEffect(() => {
@@ -47,10 +45,9 @@ export default function ConversationItem({ conversation, expanded, projects, isA
       return;
     }
 
-    startTransition(async () => {
-      await updateConversation(conversation._id, { title: renameValue.trim() });
-      setIsRenaming(false);
-    });
+    // Optimistic update — title changes instantly in sidebar
+    optimisticUpdateConversation(conversation._id, { title: renameValue.trim() });
+    setIsRenaming(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -64,7 +61,7 @@ export default function ConversationItem({ conversation, expanded, projects, isA
   return (
     <li className="relative group block">
       {isRenaming ? (
-        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/50">
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface-container/50 overflow-hidden w-full min-w-0">
           <input
             ref={inputRef}
             type="text"
@@ -72,8 +69,7 @@ export default function ConversationItem({ conversation, expanded, projects, isA
             onChange={(e) => setRenameValue(e.target.value)}
             onBlur={handleRenameSubmit}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-none outline-none text-[13px] text-zinc-100 placeholder:text-zinc-500"
-            disabled={isPending}
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-[13px] text-on-surface placeholder:text-on-surface-variant"
           />
         </div>
       ) : (
@@ -81,8 +77,8 @@ export default function ConversationItem({ conversation, expanded, projects, isA
           href={`/chats/${conversation._id}`}
           className={`flex items-center gap-2.5 px-3 py-2 rounded-lg no-underline text-[13px] transition-colors whitespace-nowrap overflow-hidden ${
             isActive && expanded 
-              ? 'bg-zinc-800 text-zinc-100 font-medium' 
-              : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              ? 'bg-surface-container text-on-surface font-medium' 
+              : 'text-on-surface-variant hover:bg-surface-container/50 hover:text-on-surface'
           }`}
           title={conversation.title}
         >
@@ -96,14 +92,23 @@ export default function ConversationItem({ conversation, expanded, projects, isA
               <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                 <ChatActionsMenu
                   conversation={conversation}
-                  projects={projects}
                   onRename={() => setIsRenaming(true)}
                   onOpenChange={onDropdownChange}
+                  onDelete={() => {
+                    if (isActive) {
+                      const remaining = conversations.filter(c => c._id !== conversation._id);
+                      if (remaining.length > 0) {
+                        router.push(`/chats/${remaining[0]._id}`);
+                      } else {
+                        router.push("/");
+                      }
+                    }
+                  }}
                   trigger={
                     <button
-                      className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-zinc-700/50 transition-all data-[state=open]:opacity-100 data-[state=open]:bg-zinc-700/50"
+                      className="p-1 rounded opacity-100 md:opacity-0 group-hover:opacity-100 hover:bg-surface-container-high/50 transition-all data-[state=open]:opacity-100 data-[state=open]:bg-surface-container-high/50"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant">
                         <circle cx="12" cy="12" r="1"></circle>
                         <circle cx="12" cy="5" r="1"></circle>
                         <circle cx="12" cy="19" r="1"></circle>

@@ -3,34 +3,24 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Edit2 } from "lucide-react";
+import { useProjects } from "@/app/stores/projects-store";
 import EditProjectModal from "../EditProjectModal";
+import type { Project, Conversation } from "@/types";
 
-export interface Project {
-  _id: string;
-  title: string;
-  context?: string;
-  userId?: string;
-  media?: string[];
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
-export interface Conversation {
-  _id: string;
-  title: string;
-  projectId?: string | null;
-  userId?: string;
-  createdAt?: string | null;
-  updatedAt: string | null;
-}
+// Re-export for page.tsx
+export type { Project, Conversation };
 
 interface ProjectDetailsProps {
   project: Project;
   conversations: Conversation[];
 }
 
-export default function ProjectDetails({ project, conversations }: ProjectDetailsProps) {
+export default function ProjectDetails({ project: initialProject, conversations }: ProjectDetailsProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { projects } = useProjects();
+
+  // Get live project data from the store (reflects optimistic edits)
+  const project = projects.find((p) => p._id === initialProject._id) as Project | undefined ?? initialProject;
 
   const formatRelativeTime = (dateInput: string | Date | null) => {
     if (!dateInput) return "No messages yet";
@@ -57,41 +47,42 @@ export default function ProjectDetails({ project, conversations }: ProjectDetail
       {/* Back Link */}
       <Link 
         href="/projects" 
-        className="text-sm font-medium text-zinc-400 hover:text-white flex items-center gap-2 transition-colors w-fit"
+        className="text-sm font-medium text-on-surface-variant hover:text-on-surface flex items-center gap-2 transition-colors w-fit"
       >
         <ArrowLeft className="w-4 h-4" />
         All projects
       </Link>
 
       {/* Project Header */}
-      <div className="flex items-start justify-between">
-        <div className="group relative">
-          <h1 className="text-4xl font-semibold text-white tracking-tight mb-3 font-serif">
-            {project.title}
-          </h1>
-          <p className="text-base text-zinc-400 max-w-2xl">
+      <div className="flex items-start justify-between w-full">
+        <div className="group relative w-full">
+          <div className="flex justify-between items-start md:block w-full">
+            <h1 className="text-4xl font-semibold text-on-surface tracking-tight mb-3 font-serif pr-4 md:pr-0">
+              {project.title}
+            </h1>
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="md:absolute md:-right-10 md:top-2 opacity-100 md:opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all shrink-0 mt-2 md:mt-0"
+              aria-label="Edit project"
+            >
+              <Edit2 className="w-5 h-5" />
+            </button>
+          </div>
+          <p className="text-base text-on-surface-variant max-w-2xl">
             {project.context || "No description provided."}
           </p>
-          
-          <button 
-            onClick={() => setIsEditModalOpen(true)}
-            className="absolute -right-10 top-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-            aria-label="Edit project"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      <div className="w-full h-px border-t border-zinc-800" />
+      <div className="w-full h-px border-t border-transparent" />
 
       {/* Conversations List */}
       <div>
-        <h2 className="text-xl font-medium text-white mb-6">Conversations</h2>
+        <h2 className="text-xl font-medium text-on-surface mb-6">Conversations</h2>
         
         {conversations.length === 0 ? (
-          <div className="bg-zinc-900/50 border border-zinc-800/50 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center">
-            <p className="text-zinc-500 text-sm">No conversations yet.</p>
+          <div className="bg-surface-container-lowest/50 border border-transparent/50 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center">
+            <p className="text-on-surface-variant text-sm">No conversations yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -101,11 +92,11 @@ export default function ProjectDetails({ project, conversations }: ProjectDetail
                 key={conversation._id}
                 className="block"
               >
-                <div className="bg-zinc-950 hover:bg-zinc-900 border-y border-zinc-800/50 -mx-4 px-4 py-4 sm:border sm:rounded-xl sm:mx-0 sm:px-6 hover:border-zinc-700 transition-all cursor-pointer">
-                  <h3 className="text-sm font-semibold text-white mb-1.5">
+                <div className="bg-primary hover:bg-primary/80 border-y border-transparent/50 -mx-4 px-4 py-4 sm:border sm:rounded-xl sm:mx-0 sm:px-6 hover:border-transparent transition-all cursor-pointer">
+                  <h3 className="text-sm font-semibold text-surface mb-1.5">
                     {conversation.title}
                   </h3>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-surface">
                     {formatRelativeTime(conversation.updatedAt)}
                   </p>
                 </div>

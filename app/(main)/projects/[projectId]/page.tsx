@@ -25,7 +25,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const conversations = (conversationsResult.success ? conversationsResult.data : []) as Conversation[];
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-8 md:p-12 lg:px-24 w-full">
+    <div className="min-h-screen bg-surface p-8 md:p-12 lg:px-24 w-full">
       <ProjectDetails 
         project={project} 
         conversations={conversations} 

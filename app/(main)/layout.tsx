@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import Sidebar from "./components/Sidebar";
+import "../globals.css";
+import Sidebar from "../components/Sidebar";
 import { getConversations } from "@/actions/conversations";
 import { getProjects } from "@/actions/projects";
-import { Geist } from "next/font/google";
+import {  Carattere, Lato } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Providers } from "../stores/providers";
+import SidebarLayout from "../components/SidebarLayout";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
+const lato = Lato({subsets:['latin'],weight:['400'], variable: "--font-lato"});
+const carattere = Carattere({subsets:['latin'],weight:['400'], variable: "--font-carattere"})
 export const metadata: Metadata = {
-  title: "AI Chatbot",
+  title: "SailorAI",
   description: "A high-fidelity AI chatbot powered by Gemini",
 };
 
@@ -26,12 +28,13 @@ export default async function RootLayout({
   const projects = projRes.success && Array.isArray(projRes.data) ? projRes.data : [];
 
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en" className={cn("font-carattere", carattere.variable,"font-lato", lato.variable)}>
       <body className="antialiased">
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar conversations={conversations as any} projects={projects as any} />
-          <main className="flex-1 overflow-auto">{children}</main>
-        </div>
+        <Providers initialConversations={conversations} initialProjects={projects}>
+          <SidebarLayout sidebar={<Sidebar />}>
+            {children}
+          </SidebarLayout>
+        </Providers>
       </body>
     </html>
   );
